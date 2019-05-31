@@ -20,7 +20,7 @@
                                                 <label class="col-md-4 control-label">Admission Number</label>
                                                 <div class="col-md-8">
                                                     <div class="input-icon right">
-                                                        <asp:TextBox ID="txtAdmissionNumber" class="form-control" runat="server"></asp:TextBox>
+                                                        <asp:TextBox ID="txtAdmissionNumber" class="form-control" runat="server" AutoPostBack="true" OnTextChanged="txtAdmissionNumber_TextChanged"></asp:TextBox>
                                                     </div>
                                                 </div>
                                             </div>
@@ -30,7 +30,7 @@
                                                 <label class="col-md-4 control-label">Deposit Number</label>
                                                 <div class="col-md-8">
                                                     <div class="input-icon right">
-                                                        <asp:TextBox ID="txtMemberName" class="form-control" Enabled="false" runat="server"></asp:TextBox>
+                                                        <asp:TextBox ID="txtDepositNumber" class="form-control" Enabled="false" runat="server"></asp:TextBox>
                                                     </div>
                                                 </div>
                                             </div>
@@ -42,53 +42,50 @@
                                                 <label class="col-md-4 control-label">Name</label>
                                                 <div class="col-md-8">
                                                     <div class="input-icon right">
-                                                        <asp:TextBox ID="TextBox2" class="form-control" runat="server"></asp:TextBox>
+                                                        <asp:TextBox ID="txtName" class="form-control" runat="server" AutoPostBack="true" OnTextChanged="txtName_TextChanged"></asp:TextBox>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-sm-6">
                                             <div class="form-group">
+                                                <label class="col-md-4 control-label">Bond Name</label>
+                                                <div class="col-md-8">
+                                                    <div class="input-icon right">
+                                                        <asp:TextBox ID="txtBondName" class="form-control" runat="server"></asp:TextBox>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <div class="form-group">
                                                 <label class="col-md-4 control-label">Deposit Date</label>
                                                 <div class="col-md-8">
                                                     <div class="input-icon right">
-                                                        <asp:TextBox ID="txtDepositDate" runat="server" Enabled="false" CssClass="form-control">
+                                                        <asp:TextBox ID="txtDepositDate" runat="server" Enabled="true" CssClass="form-control">
                                                         </asp:TextBox>
                                                         <asp:CalendarExtender
-                                                            ID="dtpLevdate" runat="server" Format="dd/MM/yyyy"
+                                                            ID="dtpDepositDate" runat="server" Format="dd/MM/yyyy"
                                                             TargetControlID="txtDepositDate">
                                                         </asp:CalendarExtender>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="row">
                                         <div class="col-sm-6">
                                             <div class="form-group">
-                                                <label class="col-md-4 control-label">Product</label>
+                                                <label class="col-md-4 control-label">By Date</label>
                                                 <div class="col-md-8">
                                                     <div class="input-icon right">
-                                                        <asp:DropDownList ID="DropDownList3" CssClass="form-control" runat="server">
-                                                            <asp:ListItem Selected="True">--select--</asp:ListItem>
-                                                            <asp:ListItem Value="1">Term Deposit</asp:ListItem>
-                                                            <asp:ListItem Value="2">Recurring Deposit</asp:ListItem>
-                                                        </asp:DropDownList>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <div class="form-group">
-                                                <label class="col-md-4 control-label">Deposit Type</label>
-                                                <div class="col-md-8">
-                                                    <div class="input-icon right">
-                                                          <asp:DropDownList ID="DropDownList5" CssClass="form-control" runat="server">
-                                                            <asp:ListItem Selected="True">--select--</asp:ListItem>
-                                                            <asp:ListItem Value="1">Fixed Deposit</asp:ListItem>
-                                                            <asp:ListItem Value="2">Cumulative Deposit</asp:ListItem>
-                                                        </asp:DropDownList>
-                                                        
+                                                        <asp:TextBox ID="txtByDate" runat="server" Enabled="true" CssClass="form-control">
+                                                        </asp:TextBox>
+                                                        <asp:CalendarExtender
+                                                            ID="dtpByDate" runat="server" Format="dd/MM/yyyy"
+                                                            TargetControlID="txtByDate">
+                                                        </asp:CalendarExtender>
                                                     </div>
                                                 </div>
                                             </div>
@@ -107,45 +104,87 @@
                                         </div>
                                         <div class="col-sm-6">
                                             <div class="form-group">
-                                                <label class="col-md-4 control-label">Duration</label>
+                                                <label class="col-md-4 control-label">Deposit Type</label>
                                                 <div class="col-md-8">
                                                     <div class="input-icon right">
-                                                        <asp:DropDownList ID="DropDownList4" CssClass="form-control" runat="server">
+                                                        <asp:DropDownList ID="ddlDepositType" CssClass="form-control" runat="server">
                                                             <asp:ListItem Selected="True">--select--</asp:ListItem>
-                                                            <asp:ListItem Value="1">1</asp:ListItem>
-                                                            <asp:ListItem Value="2">2</asp:ListItem>
-                                                            <asp:ListItem Value="2">3</asp:ListItem>
-                                                            <asp:ListItem Value="2">4</asp:ListItem>
-                                                            <asp:ListItem Value="2">5</asp:ListItem>
+                                                            <asp:ListItem Value="1">Fixed Deposit</asp:ListItem>
+                                                            <asp:ListItem Value="2">Cumulative Deposit</asp:ListItem>
+                                                            <asp:ListItem Value="2">Recurring Deposit</asp:ListItem>
+                                                        </asp:DropDownList>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <div class="form-group">
+                                                <label class="col-md-4 control-label">Tenure</label>
+                                                <div class="col-md-8">
+                                                    <div class="input-icon right">
+                                                        <%--<asp:DropDownList ID="ddlTenure" CssClass="form-control" runat="server">
+                                                            <asp:ListItem Selected="True">--select--</asp:ListItem>
+                                                            <asp:ListItem Value="1">31Days - 180 Days</asp:ListItem>
+                                                            <asp:ListItem Value="2">1Y - 2Y</asp:ListItem>
+                                                            <asp:ListItem Value="2">2Y - 5Y</asp:ListItem>
+                                                        </asp:DropDownList>--%>
+                                                        <asp:DropDownList ID="ddlTenure" CssClass="form-control" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlTenure_SelectedIndexChanged">
                                                         </asp:DropDownList>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="col-sm-6">
+                                            <div class="form-group">
+                                                <label class="col-md-4 control-label">Rate Of Intrest</label>
+                                                <div class="col-md-8">
+                                                    <div class="input-icon right">
+                                                        <asp:TextBox ID="txtRateOfIntrest" class="form-control" runat="server"></asp:TextBox>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="row">
+                                        <div class="col-sm-6">
+                                            <div class="form-group">
+                                                <label class="col-md-4 control-label">Frequency Type</label>
+                                                <div class="col-md-8">
+                                                    <div class="input-icon right">
+                                                        <asp:DropDownList ID="ddlFrequencyType" Enabled="false" CssClass="form-control" runat="server">
+                                                            <asp:ListItem Selected="True">--select--</asp:ListItem>
+                                                            <asp:ListItem Value="1">Monthly</asp:ListItem>
+                                                            <asp:ListItem Value="2">closing time</asp:ListItem>
+                                                        </asp:DropDownList>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div class="col-sm-6">
                                             <div class="form-group">
                                                 <label class="col-md-4 control-label">Maturity Interest</label>
                                                 <div class="col-md-8">
                                                     <div class="input-icon right">
-                                                        <asp:TextBox ID="txtMaturityInterest" class="form-control" runat="server"></asp:TextBox>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <div class="form-group">
-                                                <label class="col-md-4 control-label">Maturity Amount</label>
-                                                <div class="col-md-8">
-                                                    <div class="input-icon right">
-                                                       <asp:TextBox ID="txtMaturityAmount" class="form-control" runat="server"></asp:TextBox>
+                                                        <asp:TextBox ID="txtMaturityInterest" class="form-control" Enabled="false" runat="server"></asp:TextBox>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="row">
+                                        <div class="col-sm-6">
+                                            <div class="form-group">
+                                                <label class="col-md-4 control-label">Maturity Amount</label>
+                                                <div class="col-md-8">
+                                                    <div class="input-icon right">
+                                                        <asp:TextBox ID="txtMaturityAmount" class="form-control" Enabled="false" runat="server"></asp:TextBox>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div class="col-sm-6">
                                             <div class="form-group">
                                                 <label class="col-md-4 control-label">Maturity Date</label>
@@ -154,23 +193,9 @@
                                                         <asp:TextBox ID="txtMaturityDate" runat="server" Enabled="false" CssClass="form-control">
                                                         </asp:TextBox>
                                                         <asp:CalendarExtender
-                                                            ID="CalendarExtender1" runat="server" Format="dd/MM/yyyy"
+                                                            ID="dtpMaturityDate" runat="server" Format="dd/MM/yyyy"
                                                             TargetControlID="txtMaturityDate">
                                                         </asp:CalendarExtender>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <div class="form-group">
-                                                <label class="col-md-4 control-label">Frequency Type</label>
-                                                <div class="col-md-8">
-                                                    <div class="input-icon right">
-                                                        <asp:DropDownList ID="DropDownList2" CssClass="form-control" runat="server">
-                                                            <asp:ListItem Selected="True">--select--</asp:ListItem>
-                                                            <asp:ListItem Value="1">Monthly</asp:ListItem>
-                                                            <asp:ListItem Value="2">closing time</asp:ListItem>
-                                                        </asp:DropDownList>
                                                     </div>
                                                 </div>
                                             </div>
@@ -182,7 +207,7 @@
                                                 <label class="col-md-4 control-label">Nominee Name</label>
                                                 <div class="col-md-8">
                                                     <div class="input-icon right">
-                                                        <asp:TextBox ID="TextBox1" class="form-control" runat="server"></asp:TextBox>
+                                                        <asp:TextBox ID="txtNomineeNameTDA" class="form-control" runat="server"></asp:TextBox>
                                                     </div>
                                                 </div>
                                             </div>
@@ -192,17 +217,7 @@
                                                 <label class="col-md-4 control-label">Nominee Relation</label>
                                                 <div class="col-md-8">
                                                     <div class="input-icon right">
-                                                        <asp:DropDownList ID="DropDownList1" CssClass="form-control" runat="server">
-                                                            <asp:ListItem Selected="True">--select--</asp:ListItem>
-                                                            <asp:ListItem Value="1">Father</asp:ListItem>
-                                                            <asp:ListItem Value="2">Mother</asp:ListItem>
-                                                            <asp:ListItem Value="3">Husband</asp:ListItem>
-                                                            <asp:ListItem Value="4">Wife</asp:ListItem>
-                                                            <asp:ListItem Value="5">Son</asp:ListItem>
-                                                            <asp:ListItem Value="6">Daughter</asp:ListItem>
-                                                            <asp:ListItem Value="7">Brother</asp:ListItem>
-                                                            <asp:ListItem Value="8">Sister</asp:ListItem>
-                                                            <asp:ListItem Value="8">Others</asp:ListItem>
+                                                        <asp:DropDownList ID="ddlNomineeRelationTDA" CssClass="form-control" runat="server">
                                                         </asp:DropDownList>
                                                     </div>
                                                 </div>

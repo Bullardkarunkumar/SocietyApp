@@ -85,6 +85,7 @@
     <Compile Include="Reports_DL.cs" />
     <Compile Include="Settings_DL.cs" />
     <Compile Include="Supplier_DL.cs" />
+    <Compile Include="TermDepositApplication_DL.cs" />
     <Compile Include="UnitInformation_DL.cs" />
     <Compile Include="UserInfo_DL.cs" />
   </ItemGroup>

@@ -78,6 +78,7 @@
     <Compile Include="SeasonProduct.cs" />
     <Compile Include="Settings_BL.cs" />
     <Compile Include="Supplier_BL.cs" />
+    <Compile Include="TermDepositApplication_BL.cs" />
     <Compile Include="UnitInformation_BL.cs" />
     <Compile Include="UserInfo_BL.cs" />
   </ItemGroup>
