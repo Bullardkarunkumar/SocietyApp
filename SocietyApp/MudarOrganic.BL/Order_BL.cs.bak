@@ -1,0 +1,338 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+using MudarOrganic.DL;
+using System.Data;
+
+namespace MudarOrganic.BL
+{
+    public class Order_BL
+    {
+        public bool OrderInsert(int OrderID, string BuyerID, string BuyerAddress, string OrderStatus
+               , bool Approval, decimal TotalAmount, DateTime OrderDate, int PriceTermsID, int TransportID, string OriginCountry
+               , string LoadingPort, string PaymentTerms, string FreightTerms, string DestinationCountry, string DestinationPort
+               , DateTime OrderDispatchDate, string BranchID, string PurchaseOrderPath, string PurchaseOrderID, string CreatedBy
+               , string ModifiedBy, string ApprovedBy, string Comments, int TypeOfOperation, ref int ReturnOrderID)
+        {
+            return Order_DL.OrderInsert(OrderID, BuyerID, BuyerAddress, OrderStatus
+               , Approval, TotalAmount, OrderDate, PriceTermsID, TransportID, OriginCountry
+               , LoadingPort, PaymentTerms, FreightTerms, DestinationCountry, DestinationPort
+               , OrderDispatchDate, BranchID, PurchaseOrderPath, PurchaseOrderID, CreatedBy
+               , ModifiedBy, ApprovedBy, Comments, TypeOfOperation, ref  ReturnOrderID);
+        }
+        public bool OrderProducts_INT_UPT_DEL(int OrderID, int ProductID, decimal TotalPrice, string CreatedBy, string ModifiedBy, int Quantity, int Packing25, int Packing180, int TypeOfOperation)
+        {
+            return Order_DL.OrderProducts_INT_UPT_DEL(OrderID, ProductID, TotalPrice, CreatedBy, ModifiedBy, Quantity, Packing25, Packing180, TypeOfOperation);
+        }
+        public bool OrderDetails_UPD(int OrderID, string OrderStatus, string ModifiedBy, string Comments)
+        {
+            return Order_DL.OrderDetails_UPD(OrderID, OrderStatus, ModifiedBy, Comments);
+        }
+        public  bool OrderDetails_UPD(string OrderPdfPath, string ModifiedBy, string POID, int OrderID)
+        {
+            return Order_DL.OrderDetails_UPD(OrderPdfPath, ModifiedBy, POID, OrderID);
+        }
+        public bool OrderDetails_UPD(int OrderID, string OrderPdfPath, string ModifiedBy)
+        {
+            return Order_DL.OrderDetails_UPD(OrderID, OrderPdfPath, ModifiedBy);
+        }
+        public bool BranchOrderDetails_UPD(int BranchOrderID, string OrderStatus, string ModifiedBy, string Comments)
+        {
+            return Order_DL.BranchOrderDetails_UPD(BranchOrderID, OrderStatus, ModifiedBy, Comments);
+        }
+        public bool BranchOrderDetails_UPD(int BranchOrderID, string BrnachOrderPath, string ModifiedBy)
+        {
+            return Order_DL.BranchOrderDetails_UPD(BranchOrderID, BrnachOrderPath, ModifiedBy);
+        }
+        public DataTable ReturnPOList(string POvalue)
+        {
+            return Order_DL.ReturnPOList(POvalue);
+        }
+        public DataTable ReturnBPOList(string BPovalue)
+        {
+            return Order_DL.ReturnBPOList(BPovalue);
+        }
+        public  DataTable OrderList(string OrderStatus)
+        {
+            return Order_DL.OrderList(OrderStatus);
+        }
+        public DataTable OrderList(int Orderid)
+        {
+            return Order_DL.OrderList(Orderid);
+        }
+        public DataTable OrderbyBuyer(string BuyerID)
+        {
+            return Order_DL.OrderbyBuyer(BuyerID);
+        }
+        public DataTable OrderProductList(int OrderID)
+        {
+            return Order_DL.OrderProductList(OrderID);
+        }
+        public DataTable OrderProductList(string POID)
+        {
+            return Order_DL.OrderProductList(POID);
+        }
+        public DataTable OrderProductList(int OrderID, int BranchOrderID)
+        {
+            return Order_DL.OrderProductList(OrderID, BranchOrderID);
+        }
+        public DataTable BranchOrderList(string OrderStatus)
+        {
+            return Order_DL.BranchOrderList(OrderStatus);
+        }
+        public DataTable BranchOrderList(string OrderStatus, int OrderTo, string OrderToID)
+        {
+            DataTable dt = BranchOrderList(OrderStatus);
+            DataTable Result = dt.Clone();
+            DataRow[] drs = dt.Select("OrderTo = " + OrderTo + " AND OrderToID = '" + OrderToID + "'");
+            foreach (DataRow dr in drs)
+                Result.ImportRow(dr);
+            return Result;
+        }
+        public DataTable OrderTrack(string OrderID)
+        {
+            return Order_DL.OrderTrack(OrderID);
+        }
+        public DataTable OrderProduct_BPO(int OrderID)
+        {
+            return Order_DL.OrderProduct_BPO(OrderID);
+        }
+        public bool BranchOrderInsert(int OrderID, decimal TotalAmount, string OrderStatus, string BranchPOID, DateTime BranchOrderDate, string CreatedBy, string ModifiedBy, string Comments, int TypeOfOperation, ref int ReturnBranchOrderID, int OrderTo, string OrderToID)
+        {
+            return Order_DL.BranchOrderInsert(OrderID, TotalAmount, OrderStatus, BranchPOID, BranchOrderDate, CreatedBy, ModifiedBy, Comments, TypeOfOperation, ref ReturnBranchOrderID, OrderTo, OrderToID);
+        }
+        public bool BranchOrderProduct_INSandUPDandDEL(int BranchOrderID, int ProductID, decimal NetQuantity, decimal GrossQuantity, decimal Amount, string CreatedBy, string ModifiedBy, int TypeOfOperation)
+        {
+            return Order_DL.BranchOrderProduct_INSandUPDandDEL(BranchOrderID,ProductID,NetQuantity, GrossQuantity,Amount,CreatedBy,ModifiedBy,TypeOfOperation);
+        }
+        public DataTable Order_Buyer_Branch_Details(int OrderID)
+        {
+            return Order_DL.Order_Buyer_Branch_Details(OrderID);
+        }
+        public DataTable CollectedProductDetails(int OrderID)
+        {
+            return Order_DL.CollectedProductDetails(OrderID);
+        }
+        public DataTable CollectedProductDetails_Product(int ProductID)
+        {
+            return Order_DL.CollectedProductDetails_Product(ProductID);
+        }
+        public DataTable CollectedProductDetails(int OrderID, int ProductID, string BranchOrderID)
+        {
+            return Order_DL.CollectedProductDetails(OrderID, ProductID, BranchOrderID);
+        }
+        public DataTable CollectedProduct(int OrderID, int ProductID, int BranchOrderID)
+        {
+            return Order_DL.CollectedProduct(OrderID, ProductID, BranchOrderID);
+        }
+        public DataTable CollectedProduct_Product(int ProductID)
+        {
+            return Order_DL.CollectedProduct(ProductID);
+        }
+        public DataSet ReturnBatchList(string BatchID)
+        {
+            return Order_DL.ReturnBatchList(BatchID);
+        }
+        public bool ProductsCollection_Insert(ref int CollectionID, int OrderID, int BranchOrderID, string CreatedBy, string ModifiedBy, int TypeOfOperation, bool IsPreOrder)
+        {
+            return Order_DL.ProductsCollection_Insert(ref CollectionID, OrderID, BranchOrderID, CreatedBy, ModifiedBy, TypeOfOperation, IsPreOrder);
+        }
+        public bool ProductsCollectionTran_Insert(string BatchID, int CollectionID, int ProductId, string FarmerId, string OtherFarmerNames, string OtherFarmerArea, string OtherFarmerQty, string CollectedQty, string FarmId, string LotNumber, string CreatedBy, string ModifiedBy, int TypeOfOperation, string PlantationID)
+        {
+            return Order_DL.ProductsCollectionTran_Insert(BatchID, CollectionID, ProductId, FarmerId, OtherFarmerNames, OtherFarmerArea, OtherFarmerQty, CollectedQty, FarmId, LotNumber, CreatedBy, ModifiedBy, TypeOfOperation, PlantationID);
+        }
+        public bool ProductsPreorderCollectionTran_Insert(string BatchID, int ProductId, string FarmerId, string OtherFarmerNames, string OtherFarmerArea, string OtherFarmerQty, string CollectedQty, string FarmId, string LotNumber, string CreatedBy, string ModifiedBy, int TypeOfOperation, string PlantationID, int TotalQty, int AvaliableQty, int SoldQty, int PreOrderID)
+        {
+            return Order_DL.ProductsPreorderCollectionTran_Insert(BatchID, ProductId, FarmerId, OtherFarmerNames, OtherFarmerArea, OtherFarmerQty, CollectedQty, FarmId, LotNumber, CreatedBy, ModifiedBy, TypeOfOperation, PlantationID, TotalQty, AvaliableQty, SoldQty, PreOrderID); 
+        }
+        public DataTable PackingDetails(int OrderID, int BranchOrderID)
+        {
+            return Order_DL.PackingDetails(OrderID, BranchOrderID);
+        }
+        public bool PackingDetailsUpdate(int OrderID, int ProductID, int BranchOrderID, decimal GrossQty, int Packing25, int Packing180, string ModifiedBy, int TypeOfOperation)
+        {
+            return Order_DL.PackingDetailsUpdate(OrderID, ProductID, BranchOrderID, GrossQty, Packing25, Packing180, ModifiedBy, TypeOfOperation);
+        }
+        public DataTable Convert_NumberToWord(decimal TotalValue)
+        {
+            return Order_DL.Convert_NumberToWord(TotalValue);
+        }
+        public DataTable AmtinWords(decimal TotalValue)
+        {
+            return Order_DL.AmtinWords(TotalValue);
+        }
+        public bool OrderSampleDetails(int SampleID,string BuyerID ,DateTime SampleDate, string Status, string CourierName, DateTime CourierDate, string ReceivedDate, string CourierAccountNumber,string CreatedBy, string ModifiedBy, ref int ReturnSampleID,int TypeOfOperation)
+        {
+            return Order_DL.OrderSampleDetails(SampleID, BuyerID, SampleDate, Status, CourierName, CourierDate, ReceivedDate, CourierAccountNumber, CreatedBy, ModifiedBy, ref ReturnSampleID, TypeOfOperation);
+        }
+        public bool OrderSampleProductDetails(int SampleProductID, int ProductID, int SampleID, int Quantity,string CreatedBy, string ModifiedBy,int TypeOfOperation)
+        {
+            return Order_DL.OrderSampleProductDetails(SampleProductID, ProductID, SampleID, Quantity, CreatedBy, ModifiedBy, TypeOfOperation);
+        }
+        public DataTable OrderSampleDetails(string BuyerID)
+        {
+            return Order_DL.OrderSampleDetails(BuyerID);
+        }
+        public DataTable OrderSampleProduct(int SampleID)
+        {
+            return Order_DL.OrderSampleProduct(SampleID);
+        }
+        public DataTable BranchOrderDetails(string BranchPOID)
+        {
+            return Order_DL.BranchOrderDetails(BranchPOID);
+        }
+        #region Blending
+        public DataTable GetBliendingDetails(string OrderID, string BOrderID)
+        {
+            return Order_DL.GetBliendingDetails(OrderID, BOrderID);
+        }
+        public DataTable ReturnBBatchList(string BBatchID)
+        {
+            return Order_DL.ReturnBBatchList(BBatchID);
+        }
+        
+        public bool BlendingBatchNo(int CTID, string BBatchID, string ModifiedBy, int TypeOfOperation)
+        {
+            return Order_DL.BlendingBatchNo(CTID, BBatchID, ModifiedBy, TypeOfOperation);
+        }
+        #endregion
+
+        #region Freeze
+        public DataTable GetFreezeDetails(string OrderID, string BOrderID)
+        {
+            return Order_DL.GetFreezeDetails(OrderID, BOrderID);
+        }
+        public DataTable ReturnFBatchList(string BBatchID)
+        {
+            return Order_DL.ReturnFBatchList(BBatchID);
+        }
+        public DataSet GetFreezeTran(string FID, string ProductID)
+        {
+            return Order_DL.GetFreezeTran(FID, ProductID);
+        }
+        public bool Freeze_Insert(int OrderID, int BranchOrderID, string CreatedBy, string ModifiedBy, int Quntatiy, int ProductID, string FBatchID, int TypeOfOperation)
+        {
+            return Order_DL.Freeze_Insert(OrderID, BranchOrderID, CreatedBy, ModifiedBy, Quntatiy, ProductID, FBatchID, TypeOfOperation);
+        }
+        public bool FreezeTran_INSandUPDandDEL(int FreezeTransactionID, int FreezeID, int ProductID, string FreezeProductBatchID, string FreezeProductName, string FreezeQuantity, string CreatedBY, string ModifiedBy, int TypeOfOperation)
+        {
+            return Order_DL.FreezeTran_INSandUPDandDEL(FreezeTransactionID, FreezeID, ProductID, FreezeProductBatchID, FreezeProductName, FreezeQuantity, CreatedBY, ModifiedBy, TypeOfOperation);
+        }
+        #endregion
+
+        #region Pre Order
+        public bool PreorderSoldQtyUpdate(int PreOrderID, int SoldQty, string ModifiedBy)
+        {
+            return Order_DL.PreorderSoldQtyUpdate(PreOrderID, SoldQty, ModifiedBy);
+        }
+        public DataTable PreOrderList()
+        {
+            return Order_DL.PreOrderList();
+        }
+        public DataTable PreOrderList_Product(int ProductID)
+        {
+            DataTable DT = PreOrderList();
+            DataRow[] drs = DT.Select("ProductID = " + ProductID);
+
+            DataTable ResultDT = DT.Clone();
+            foreach (DataRow dr in drs)
+                ResultDT.ImportRow(dr);
+            return ResultDT;
+        }
+        public DataTable PreOrderList(int PreOrderID)
+        {
+            DataTable DT = PreOrderList();
+            DataRow[] drs = DT.Select("CollectionTransactionID = " + PreOrderID);
+
+            DataTable ResultDT = DT.Clone();
+            foreach (DataRow dr in drs)
+                ResultDT.ImportRow(dr);
+            return ResultDT;
+        }
+        #endregion
+
+        #region Orders for Admin Checkit
+        public bool NewOrderArrived()
+        {
+            return Order_DL.NewOrderArrived();
+        }
+        public void updateTrackPO()
+        {
+            Order_DL.UpdateTrackPO();
+        } 
+        #endregion
+
+        #region Any Transactions for superadmin
+        public DataTable GetTransactionsBuyerOrderDetails(string todaydate)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            DataTable dt = new DataTable();
+            try
+            {
+                dt = mdbh.ExecuteDataTable("SELECT od.OrderID,convert(char(11),od.OrderDate,106) as OrderDate,od.PurchaseOrderID,bd.BuyerCompanyName,od.OrderStatus,od.CreatedDate,CONVERT(varchar,od.CreatedDate , 121) as seachdate FROM tblOrderDetails od LEFT JOIN tblBuyerDetails bd ON od.BuyerID=bd.BuyerId WHERE od.[Delete]=0 and od.OrderDate= '" + todaydate + "' ORDER BY od.CreatedDate DESC");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return dt;
+        }
+        public DataTable GetTransactionsBasedOnDate(string Date)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            DataTable dt = new DataTable();
+            try
+            {
+                dt = mdbh.ExecuteDataTable("SELECT od.OrderID,convert(char(11),od.OrderDate,106) as OrderDate,od.PurchaseOrderID,bd.BuyerCompanyName,od.OrderStatus,od.CreatedDate FROM tblOrderDetails od LEFT JOIN tblBuyerDetails bd ON od.BuyerID=bd.BuyerId WHERE od.[Delete]=0 and od.CreatedDate= '" + Date + "' ORDER BY od.CreatedDate DESC");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return dt;
+        }
+        public DataTable GetTransactionsBranchOrderDetails(string todayDate)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            DataTable dt = new DataTable();
+            try
+            {
+                dt = mdbh.ExecuteDataTable("SELECT CreatedDate as seachdate FROM tblBranchOrder WHERE BranchOrderDate='" + todayDate + "' AND [Delete]=0 ORDER BY BranchOrderDate DESC");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return dt;
+
+        }
+        public DataTable GetTransactionsBranchOrdesBasedonDate(string Date)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            DataTable dt = new DataTable();
+            try
+            {
+                dt = mdbh.ExecuteDataTable("SELECT OrderId,BranchPOID,OrderStatus,BranchOrderDate,CreatedDate FROM tblBranchOrder WHERE CreatedDate='" + Date + "' AND [Delete]=0 ORDER BY BranchOrderDate DESC");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return dt;
+        }
+        #endregion
+
+        #region Orders for Branch checkit
+        public bool NewBranchOrderArrived()
+        {
+            return Order_DL.NewBranchOrderArrived();
+        }
+        public void updateBranchPendingOrders()
+        {
+            Order_DL.updateBranchPendingOrders();
+        }  
+        #endregion
+    }
+}

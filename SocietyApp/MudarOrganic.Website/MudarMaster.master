@@ -1,0 +1,366 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="MudarMaster.master.cs"
+    Inherits="MudarMaster" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>Mudar Organic</title>
+    <link href="Style/style.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="../Scripts/jquery-2.1.3.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+    <link href="Style/GridView_Style.css" rel="stylesheet" type="text/css" />
+    <link href="Style/gvstyle.css" rel="stylesheet" type="text/css" />
+    <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
+
+    <style type="text/css">
+        .triggerActive
+        {
+            background-color:Gray;
+            color: White;
+        }
+ </style>
+
+    <script language="javascript" type="text/javascript">
+        // <!CDATA[
+        function btnHome_onclick() {
+            window.location = "http://localhost:2465/Home.aspx";
+        }
+
+        function btnLogout_onclick() {
+            window.location = "http://localhost:2465/logout.aspx";
+        }
+        // ]]>
+    </script>
+
+</head>
+<body class="page-container-bg-solid page-md">
+    <form id="Form1" runat="server">
+        <asp:ToolkitScriptManager ID="toolkitScriptMaster" runat="server">
+        </asp:ToolkitScriptManager>
+        <table align="center" style="margin: 0 auto;">
+            <tr>
+                <td>
+                    <div id="header">
+                        <table>
+                            <tr>
+                                <td>
+                                    <table>
+                                        <tr>
+                                            <td style="background-position: top;">
+                                                <asp:Image Height="135px" Width="200px" ID="imgLogo" runat="server" ImageUrl="~/images/MUDAR LOGO.bmp" />
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td>
+                                    <table align="center">
+                                        <tr>
+                                            <td>
+                                                <div id="divBranch" visible="false" runat="server">
+                                                    <table align="left">
+                                                        <tr>
+                                                            <td colspan="16" align="center" bgcolor="#FDB700" style="font-family: Verdana; font-size: x-large">
+                                                                <asp:Label ID="lblICS" runat="server" /></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2" align="center">
+                                                                <asp:Button ID="btnFarmerInfo" runat="server" Text="Farmer Info" CssClass="btn" OnClick="btnFarmerInfo_Click" />
+                                                            </td>
+                                                            <td colspan="2" align="left">
+                                                                <asp:Button ID="btnFarmerPlantation" runat="server" Text="Production Info" CssClass="btn"
+                                                                    OnClick="btnFarmerPlantation_Click" />
+                                                            </td>
+                                                            <td colspan="2" align="left">
+                                                                <asp:Button ID="btnInternalInspection" runat="server" Text="Inspection List" CssClass="btn"
+                                                                    OnClick="btnInternalInspection_Click" />
+                                                            </td>
+                                                            <td colspan="2" align="left">
+                                                                <asp:Button ID="btnFarmsInfo" runat="server" CssClass="btn" OnClick="btnFarmsInfo_Click" Text="Farming Info" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2" align="left">
+                                                                <asp:Button ID="btnTracktheLot" runat="server" Text="Track the Lot" CssClass="btn"
+                                                                    OnClick="btnTracktheLot_Click" />
+                                                            </td>
+                                                            <td colspan="2" align="center">
+                                                                <asp:Button ID="btnReports" runat="server" Text="Reports" CssClass="btn" OnClick="btnReports_Click" />
+                                                            </td>
+                                                            <td colspan="2" align="left">
+                                                                <asp:Button ID="btnComplaints" runat="server" Text="Complaints" CssClass="btn"
+                                                                    OnClick="btnComplaints_Click" />
+                                                            </td>
+                                                            <td colspan="2" align="left">&nbsp;</td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div id="divAdmin" visible="false" runat="server">
+                                                    <table align="center">
+                                                        <tr>
+                                                            <td colspan="16" align="center" bgcolor="#FDB700" style="font-family: Verdana; font-size: x-large">ADMIN&nbsp;</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnCatProSea" runat="server" Text="SEA/CAT/PRO" CssClass="btn" ToolTip="Add Season or Category or Product"
+                                                                    PostBackUrl="~/Admin/CategoryProductDetails.aspx" OnClick="btnCatProSea_Click" />
+                                                            </td>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnempbran" runat="server" Text="EMP/ROL/BRN" CssClass="btn" ToolTip="Add Employee or Role or Branch"
+                                                                    OnClick="btnempbran_Click" />
+                                                            </td>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnHolidaysList" runat="server" Text="Holidays List" CssClass="btn"
+                                                                    OnClick="btnHolidaysList_Click" />
+                                                            </td>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnInspectionSchedules" runat="server" Text="Inspection Plan" CssClass="btn"
+                                                                     OnClick="btnInspectionSchedules_Click" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td align="center">
+                                                                <asp:UpdatePanel ID="UpdatePanel1" runat="server" UpdateMode="Always">
+                                                                    <ContentTemplate>
+                                                                        <asp:Timer ID="Timer1" runat="server" Interval="5000" Enabled="false" OnTick="Timer1_Tick">
+                                                                        </asp:Timer>
+                                                                        <asp:Button ID="btnTrackPO" runat="server" Text="Track PO O/W" CssClass="btn" OnClick="btnTrackPO_Click" />
+                                                                    </ContentTemplate>
+                                                                    <Triggers>
+                                                                        <asp:AsyncPostBackTrigger ControlID="Timer1" EventName="Tick" />
+                                                                    </Triggers>
+                                                                </asp:UpdatePanel>
+                                                            </td>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnSampleReq" runat="server" Text="Sample Request" CssClass="btn" OnClick="btnSampleReq_Click" />
+                                                            </td>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnFarmerApproval" runat="server" Text="Farmer Approval" CssClass="btn"
+                                                                    OnClick="btnFarmerApproval_Click" />
+                                                            </td>
+                                                            <td align="left">
+                                                                <asp:Button ID="btnTrackLot" runat="server" Text="Track the Lot" CssClass="btn" PostBackUrl="~/Mudar/TracktheLot.aspx"
+                                                                    OnClick="btnTrackLot_Click" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td align="left">
+                                                                <asp:Button ID="btnAddSupplier" runat="server" Text="Supplier Info" CssClass="btn"
+                                                                    OnClick="btnAddSupplier_Click" />
+                                                            </td>
+                                                            <td align="left">
+                                                                <asp:Button ID="btnCustomAgent" runat="server" Text="Custom Agent" CssClass="btn"
+                                                                    OnClick="btnCustomAgent_Click" />
+                                                            </td>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnUnitInformation" runat="server" Text="Unit Information" CssClass="btn"
+                                                                    OnClick="btnUnitInformation_Click" />
+                                                            </td>
+                                                            <td align="left">
+                                                                <asp:Button ID="btnStandInfo" runat="server" Text="Standard Data"
+                                                                    CssClass="btn" OnClick="btnStandInfo_Click" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <asp:Button ID="btnCheckData" runat="server" Text="Check Avail Qty"
+                                                                    CssClass="btn" OnClick="btnCheckData_Click" />
+                                                            </td>
+                                                            <td>
+                                                                <asp:Button ID="btnAddBuyer" runat="server" Text="Add Buyer" CssClass="btn" OnClick="btnAddBuyer_Click" />
+                                                            </td>
+                                                            <td>
+                                                                <asp:Button ID="btnSoldQty" runat="server" Text="Production List" CssClass="btn" OnClick="btnSoldQty_Click" />
+                                                            </td>
+                                                            <td></td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div id="divBuyer" visible="false" runat="server">
+                                                    <table align="center">
+                                                        <tr>
+                                                            <td colspan="16" align="center" bgcolor="#FDB700" style="font-family: Verdana; font-size: x-large">&nbsp;<asp:Label ID="lblBuyerName" runat="server" /></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnPrices" runat="server" Text="Prices" CssClass="btnFarmer" OnClick="btnPrices_Click"
+                                                                    PostBackUrl="~/Buyer/BuyNewPrice.aspx" />
+                                                            </td>
+                                                            <td align="center">
+                                                                <asp:UpdatePanel ID="UpdatePanel3" runat="server" UpdateMode="Always">
+                                                                    <ContentTemplate>
+                                                                        <asp:Timer ID="Timer23" runat="server" Interval="5000" Enabled="false" OnTick="Timer23_Tick">
+                                                                        </asp:Timer>
+                                                                        <asp:Button ID="btnTrackPOBuyer" runat="server" Text="Track PO" CssClass="btnFarmer"
+                                                                            OnClick="btnTrackPOBuyer_Click" />
+                                                                    </ContentTemplate>
+                                                                    <Triggers>
+                                                                        <asp:AsyncPostBackTrigger ControlID="Timer23" EventName="Tick" />
+                                                                    </Triggers>
+                                                                </asp:UpdatePanel>
+
+                                                            </td>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnSampleRequest" runat="server" Text="Sample Request" CssClass="btnFarmer"
+                                                                    OnClick="btnSampleRequest_Click" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnLotsSample" runat="server" Text="Track Lot Sample" CssClass="btnFarmer"
+                                                                    OnClick="btnLotsSample_Click" />
+                                                            </td>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnComplaintsBuyer" runat="server" Text="Complaints" CssClass="btnFarmer"
+                                                                    OnClick="btnComplaintsBuyer_Click" />
+                                                            </td>
+                                                            <td>
+                                                                <asp:Button ID="btnUpateLogin" runat="server" Text="Update Login Details" CssClass="btnFarmer"
+                                                                    OnClick="btnUpateLogin_Click" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <asp:Button ID="btnProfile" runat="server" Text="Edit Profile" CssClass="btnFarmer"
+                                                                    OnClick="btnProfile_Click" />
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div id="divSuperAdmin" visiable="false" runat="server">
+                                                    <table>
+                                                        <tr>
+                                                            <td colspan="16" align="center" bgcolor="#FDB700" style="font-family: Verdana; font-size: x-large">&nbsp;Super ADMIN&nbsp;</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnSuperOrders" runat="server" Text="Orders List" CssClass="btn"
+                                                                    OnClick="btnSuperOrders_Click" />
+                                                            </td>
+                                                            <td align="left">
+                                                                <asp:Button ID="btnPriceUpdate" runat="server" Text="Price List" CssClass="btn"
+                                                                    OnClick="btnPriceUpdate_Click" />
+                                                            </td>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnUserEdit" runat="server" Text="User Info" CssClass="btn"
+                                                                    OnClick="btnUserEdit_Click" />
+                                                            </td>
+                                                            <td align="center">
+                                                                <asp:UpdatePanel ID="UpdatePanel2" runat="server" UpdateMode="Always">
+                                                                    <ContentTemplate>
+                                                                        <asp:Timer ID="Transaction" runat="server" Interval="5000" Enabled="false" OnTick="Transaction_Tick">
+                                                                        </asp:Timer>
+                                                                        <asp:Button ID="btnTransactions" runat="server" Text="Transactions" CssClass="btn"
+                                                                            OnClick="btnTransactions_Click" />
+                                                                    </ContentTemplate>
+                                                                    <Triggers>
+                                                                        <asp:AsyncPostBackTrigger ControlID="Transaction" EventName="Tick" />
+                                                                    </Triggers>
+                                                                </asp:UpdatePanel>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnBuyerInfo" runat="server" Text="Buyer Info" CssClass="btn"
+                                                                    OnClick="btnBuyerInfo_Click" /></td>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnBuyerApproval" runat="server" Text="Buyer Apporval" CssClass="btn"
+                                                                    OnClick="btnBuyerApproval_Click" /></td>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnFarmingInfo" runat="server" Text="Basic Farming" CssClass="btn"
+                                                                    OnClick="btnFarmingInfo_Click" />
+                                                            </td>
+                                                            <td align="center"></td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div id="divSupplier" runat="server" visible="false">
+                                                    <table>
+                                                        <tr>
+                                                            <td colspan="16" align="center" bgcolor="#FDB700" style="font-family: Verdana; font-size: x-large">
+                                                                <asp:Label ID="lblIS" runat="server" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnAddPrices" runat="server" Text="Add Prices" CssClass="btn" OnClick="btnAddPrices_Click" />
+                                                            </td>
+                                                            <td align="left">
+                                                                <asp:Button ID="btnSupplierProfile" runat="server" Text="Profile" CssClass="btn"
+                                                                    OnClick="btnSupplierProfile_Click" />
+                                                            </td>
+                                                            <td align="center">
+
+                                                                <asp:Button ID="btnPreorder" runat="server" Text="Pre Order" CssClass="btn" OnClick="btnPreorder_Click" />
+                                                            </td>
+                                                            <td align="center">
+                                                                <asp:UpdatePanel ID="UpdatePanel4" runat="server" UpdateMode="Always">
+                                                                    <ContentTemplate>
+                                                                        <asp:Timer ID="BranchOrderTrans" runat="server" Enabled="false" Interval="5000" OnTick="BranchOrderTrans_Tick">
+                                                                        </asp:Timer>
+                                                                        <asp:Button ID="btnPendingOrders" runat="server" CssClass="btn" OnClick="btnPendingOrders_Click" Text="Pending Orders" />
+                                                                    </ContentTemplate>
+                                                                    <Triggers>
+                                                                        <asp:AsyncPostBackTrigger ControlID="BranchOrderTrans" EventName="Tick" />
+                                                                    </Triggers>
+                                                                </asp:UpdatePanel>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td align="center">
+                                                                <asp:Button ID="btnReport" runat="server" Text="Reports" CssClass="btn" OnClick="btnReport_Click" />
+                                                            </td>
+                                                            <td align="center">&nbsp;</td>
+                                                            <td align="center"></td>
+                                                            <td align="center"></td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        <div align="right" style="float: right">
+                            <input id="btnHome" runat="server" type="button" style="color: White; border-width: 0px; background-color: Transparent; font-family: Gill Sans MT, sans-serif;"
+                                value="HOME"
+                                onclick="return btnHome_onclick()" />
+                            <input id="btnLogout" runat="server" type="button" value="LOGOUT" style="color: White; border-width: 0px; background-color: Transparent; font-family: Gill Sans MT, sans-serif;"
+                                onclick="return btnLogout_onclick()" />
+                        </div>
+                    </div>
+                    <div>
+                        <asp:ContentPlaceHolder ID="body_cph" runat="server">
+                        </asp:ContentPlaceHolder>
+                    </div>
+                    <div id="fotter">
+                        Copright &copy; 2014, Mudar Organic - Terms & Privacy &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="http://www.vgsoft.in" title="VGSOFTSOLUTION">Powered By: VG Soft Solutions</a>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </form>
+
+
+</body>
+</html>

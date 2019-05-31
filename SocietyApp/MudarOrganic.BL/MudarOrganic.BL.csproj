@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{F463A979-F6C5-4FAB-A481-8BFA6A9A6D49}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MudarOrganic.BL</RootNamespace>
+    <AssemblyName>MudarOrganic.BL</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net35\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BranchsRolesEmployees_BL.cs" />
+    <Compile Include="Buyer_BL.cs" />
+    <Compile Include="CategoryProduct_BL.cs" />
+    <Compile Include="CustomAgent_BL.cs" />
+    <Compile Include="Farmer_BL.cs" />
+    <Compile Include="Farming_BL.cs" />
+    <Compile Include="FarmPlantation_BL.cs" />
+    <Compile Include="Invoice_BL.cs" />
+    <Compile Include="Login_BL.cs" />
+    <Compile Include="Membership_BL.cs" />
+    <Compile Include="Order_BL.cs" />
+    <Compile Include="ProductPriceUpdate_BL.cs" />
+    <Compile Include="InspectionPlan_BL.cs" />
+    <Compile Include="Product_BL.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reports_BL.cs" />
+    <Compile Include="SeaProdModel.cs" />
+    <Compile Include="SeasonProduct.cs" />
+    <Compile Include="Settings_BL.cs" />
+    <Compile Include="Supplier_BL.cs" />
+    <Compile Include="UnitInformation_BL.cs" />
+    <Compile Include="UserInfo_BL.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Email\EmailName.csproj">
+      <Project>{E8635A3C-532E-436A-90FE-F1337D3C4FDD}</Project>
+      <Name>EmailName</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MudarOrganic.Components\MudarOrganic.Components.csproj">
+      <Project>{FFADF2D3-462D-446C-99B0-7CFB872B69D5}</Project>
+      <Name>MudarOrganic.Components</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MudarOrganic.DL\MudarOrganic.DL.csproj">
+      <Project>{b7b38529-bc6a-49d4-890c-15bb3d48399b}</Project>
+      <Name>MudarOrganic.DL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Society.Models\Society.Models.csproj">
+      <Project>{ea1bab21-ce5d-47af-83e8-7c2eb73d99fb}</Project>
+      <Name>Society.Models</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

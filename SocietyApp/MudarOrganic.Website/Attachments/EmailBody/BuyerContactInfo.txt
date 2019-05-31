@@ -1,0 +1,20 @@
+﻿<p>
+<br/>
+Hi <b>Mudar India Exports</b><br/>
+I request you to update my details as given below. <br/>
+<html>
+	<body>
+	<table border="1" width="100%">
+	<tr><td colspan="2"width="40%" bgcolor="#e2efd9" align="center"><b>Contact Information</b></td>
+	<tr bgcolor="#e2efd9"><td width="40%" align="center">Contact Person</td><td width="60%" align="center">@ContactPerson@</td></tr>
+	<tr bgcolor="#e2efd9"><td width="40%" align="center">Phone</td><td width="60%" align="center">@Phone@</td></tr>
+	<tr bgcolor="#e2efd9"><td width="40%" align="center">Mobile</td><td width="60%" align="center">@Mobile@</td></tr>
+	<tr bgcolor="#e2efd9"><td width="40%" align="center">email</td><td width="60%" align="center">@email@</td></tr>
+	<tr bgcolor="#e2efd9"><td width="40%" align="center">website</td><td width="60%" align="center">@website@</td></tr>
+	</table>
+	</body>
+</html>
+<br/>
+Thanks<br/> 
+<b>@Company@</b>
+</p>

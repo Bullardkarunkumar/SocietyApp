@@ -1,0 +1,2726 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using MudarOrganic.BL;
+using MudarOrganic.Components;
+using System.Data;
+using System.Web.Configuration;
+using System.Net;
+using System.Text.RegularExpressions;
+
+public partial class Admin_UpdateOrder : System.Web.UI.Page
+{
+    public static string SortExpression_p = "FarmerCode";
+    Order_BL orderObj = new Order_BL();
+    Settings_BL settObj = new Settings_BL();
+    Reports_BL reportObj = new Reports_BL();
+    FarmPlantation_BL PlantObj = new FarmPlantation_BL();
+    Reports_Type rtypeObj = new Reports_Type();
+    Product_BL pr = new Product_BL();
+    Settings_BL set = new Settings_BL();
+    Farmer_BL frmObj = new Farmer_BL();
+    DataTable dtGlobalFarmerCollect = new DataTable();
+
+
+    bool result = false;
+    string FarmerId = string.Empty;
+    string FarmId = string.Empty;
+    string PlantationId = string.Empty;
+    string CollectDt = string.Empty;
+    string LotNumber = string.Empty;
+    string BlendBatachID = string.Empty;
+    string FarmerCollectCheck = "";
+    int collect = 0;
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        string QorderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        if (!Page.IsPostBack)
+        {
+            //btnDisablepreorderSave.Visible = false;
+            btnDisablepreorderSave.Style.Add("display", "none");
+            btnDisablecollectSave.Visible = false;
+
+            ViewState["dirState"] = "";
+            Session["dtNewcollect"] = new object();
+            BindOrderDetails(Convert.ToInt32(QorderID));
+            if (!string.IsNullOrEmpty(lblBranchOrderID.Text))
+            {
+                BindddlOrderProductDetails();
+                BindOrderReportPathdetails();
+                BindddlBlendProductDetails();
+                BindddlTestProductDetails();
+            }
+            BindBranchOrderReport();
+            BindIcsCodes();
+            DivMasterManage();
+            ddlBStatus_SelectedIndexChanged(sender, e);
+            Session["SelectedCollectionItems"] = null;
+
+            BindEmptyCollectionDataTable();
+
+            if (!string.IsNullOrEmpty(Request.QueryString["pid"]) && !string.IsNullOrEmpty(Request.QueryString["sel"]))
+            {
+                ddlSelectProduct.SelectedValue = Request.QueryString["pid"];
+                ddlSelectProduct_SelectedIndexChanged(sender, e);
+
+                string selectedICS = Request.QueryString["sel"];
+                foreach (ListItem item in chkICSList.Items)
+                {
+                    if (selectedICS.Contains(item.Value))
+                    {
+                        item.Selected = true;
+                    }
+                    else
+                    {
+                        item.Selected = false;
+                    }
+                }
+                chkICSList_SelectedIndexChanged(sender, e);
+
+                btnPreorder_Click(sender, e);
+            }
+        }
+        if (ddlBStatus.Text == "COLLECTING")
+        {
+            divCollectingDetails.Visible = true;
+        }
+        else if (ddlBStatus.Text == "PACKING")
+        {
+            divPackingDetails.Visible = true;
+        }
+        else if (ddlBStatus.Text == "DOCUMENTING")
+            divBuyerReports.Visible = true;
+        else if (ddlBStatus.Text == "BLENDING")
+            divBlendingDetails.Visible = true;
+        else if (ddlBStatus.Text == "TESTING")
+            divTesting.Visible = true;
+        if (Session["RoleName_s"].ToString().Trim().ToLower() == LoginType.Admin.ToLower())
+        {
+            divOrderDetails.Visible = true;
+            divReports.Visible = true;
+            divCollectingDetails.Visible = false;
+            divPackingDetails.Visible = false;
+            divBlendingDetails.Visible = false;
+            divBuyerReports.Visible = false;
+            divTesting.Visible = false;
+            divFreeze.Visible = false;
+        }
+        else if (Session["RoleName_s"].ToString().Trim().ToLower() == LoginType.Branch.ToLower())
+        {
+            divOrderDetails.Visible = false;
+            divReports.Visible = false;
+        }
+        else if (Session["RoleName_s"].ToString().Trim().ToLower() == LoginType.Supplier.ToLower())
+        {
+            divOrderDetails.Visible = false;
+            divReports.Visible = false;
+        }
+        if (!string.IsNullOrEmpty(hlInvoice.Text))
+        {
+            btnInvoice.Visible = false;
+            btnDisableInv.Enabled = false;
+            btnDisableInv.Visible = true;
+            btnDisableInv.ForeColor = System.Drawing.ColorTranslator.FromHtml("Gray");
+        }
+
+        if (!string.IsNullOrEmpty(hlPacking.NavigateUrl))
+        {
+            btnPacking.Visible = false;
+            btnDisablePack.Enabled = false;
+            btnDisablePack.Visible = true;
+            btnDisablePack.ForeColor = System.Drawing.ColorTranslator.FromHtml("Gray");
+        }
+        if (!string.IsNullOrEmpty(hlCoverLetter.NavigateUrl))
+        {
+            btnCoverLetter.Visible = false;
+            btnDisableCL.Enabled = false;
+            btnDisableCL.Visible = true;
+            btnDisableCL.ForeColor = System.Drawing.ColorTranslator.FromHtml("Gray");
+        }
+        if (!string.IsNullOrEmpty(hlFIRCover.NavigateUrl))
+        {
+            btnFLetter.Visible = false;
+            btnDisableFL.Enabled = false;
+            btnDisableFL.Visible = true;
+            btnDisableFL.ForeColor = System.Drawing.ColorTranslator.FromHtml("Gray");
+        }
+        if (!string.IsNullOrEmpty(hlHazSea.NavigateUrl))
+        {
+            btnHazsea.Visible = false;
+            btnDisableHazSea.Enabled = false;
+            btnDisableHazSea.Visible = true;
+            btnDisableHazSea.ForeColor = System.Drawing.ColorTranslator.FromHtml("Gray");
+        }
+        if (!string.IsNullOrEmpty(hlHazAir.NavigateUrl))
+        {
+            btnHazAir.Visible = false;
+            btnDisableHazAir.Enabled = false;
+            btnDisableHazAir.Visible = true;
+            btnDisableHazAir.ForeColor = System.Drawing.ColorTranslator.FromHtml("Gray");
+        }
+        if (!string.IsNullOrEmpty(hlBInvoice.NavigateUrl))
+        {
+            btnBInvoice.Visible = false;
+            btnDisableBInvoice.Enabled = false;
+            btnDisableBInvoice.Visible = true;
+            btnDisableBInvoice.ForeColor = System.Drawing.ColorTranslator.FromHtml("Gray");
+        }
+        if (!string.IsNullOrEmpty(hlBGLCInfo.NavigateUrl))
+        {
+            btnBGLCInfo.Visible = false;
+            btnDisableBGLCInfo.Enabled = false;
+            btnDisableBGLCInfo.Visible = true;
+            btnDisableBGLCInfo.ForeColor = System.Drawing.ColorTranslator.FromHtml("Gray");
+        }
+        if (!string.IsNullOrEmpty(hlBTruckBill.NavigateUrl))
+        {
+            btnBTruckBill.Visible = false;
+            btnDisableBTruckBill.Enabled = false;
+            btnDisableBTruckBill.Visible = true;
+            btnDisableBTruckBill.ForeColor = System.Drawing.ColorTranslator.FromHtml("Gray");
+        }
+        if (!string.IsNullOrEmpty(hlBLR.NavigateUrl))
+        {
+            btnBLR.Visible = false;
+            btnDisableBLR.Enabled = false;
+            btnDisableBLR.Visible = true;
+            btnDisableBLR.ForeColor = System.Drawing.ColorTranslator.FromHtml("Gray");
+        }
+    }
+
+    public void BindIcsCodes()
+    {
+        DataTable dt = frmObj.GetICSCodes();
+        chkICSList.DataTextField = "Branchcode";
+        chkICSList.DataValueField = "Branchcode";
+        chkICSList.DataSource = dt;
+        chkICSList.DataBind();
+    }
+
+
+    public void BindEmptyCollectionDataTable()
+    {
+        DataTable dt = new DataTable();
+        DataColumn dc = new DataColumn("PlantationId", typeof(string));
+        dt.Columns.Add(dc);
+        dc = new DataColumn("FarmerID", typeof(string));
+        dt.Columns.Add(dc);
+        dc = new DataColumn("FarmID", typeof(string));
+        dt.Columns.Add(dc);
+        dc = new DataColumn("FarmerCode", typeof(string));
+        dt.Columns.Add(dc);
+
+        dc = new DataColumn("FirstName", typeof(string));
+        dt.Columns.Add(dc);
+        dc = new DataColumn("Lot_No", typeof(string));
+        dt.Columns.Add(dc);
+        dc = new DataColumn("TotalProductQuantity", typeof(decimal));
+        dt.Columns.Add(dc);
+        dc = new DataColumn("SoldTotalQty", typeof(decimal));
+        dt.Columns.Add(dc);
+        dc = new DataColumn("Avaliable", typeof(decimal));
+        dt.Columns.Add(dc);
+        dc = new DataColumn("AvailableQuantity", typeof(decimal));
+        dt.Columns.Add(dc);
+        dc = new DataColumn("Collect", typeof(bool));
+        dc.DefaultValue = false;
+        dt.Columns.Add(dc);
+        //dt.Rows.Add(dt.NewRow());
+        gvSelectedCollectionDetails.DataSource = dt;
+        gvSelectedCollectionDetails.DataBind();
+        //int totalcolums = gvSelectedCollectionDetails.Rows[0].Cells.Count;
+        //gvSelectedCollectionDetails.Rows[0].Cells.Clear();
+        ////gvSelectedCollectionDetails.Rows[0].Controls.Clear();
+        //gvSelectedCollectionDetails.Rows[0].Cells.Add(new TableCell());
+        //gvSelectedCollectionDetails.Rows[0].Cells[0].ColumnSpan = totalcolums;
+        //gvSelectedCollectionDetails.Rows[0].Cells[0].Text = "No Items collected from farmer yet";
+        //gvSelectedCollectionDetails.Rows[0].Cells[0].ForeColor = System.Drawing.Color.Red;
+        //gvSelectedCollectionDetails.Rows[0].Cells[0].HorizontalAlign = HorizontalAlign.Center;
+        //gvSelectedCollectionDetails.Rows[0].Cells[0].Font.Bold = true;
+    }
+
+    public void DivMasterManage()
+    {
+        if (Session["RoleName_s"].ToString().Trim().ToLower() == LoginType.Admin.ToLower())
+        {
+            divOrderDetails.Visible = true;
+            BranchOrderDetails.Visible = false;
+            divReports.Visible = false;
+        }
+        else if (Session["RoleName_s"].ToString().Trim().ToLower() == LoginType.Branch.ToLower())
+        {
+            BranchOrderDetails.Visible = true;
+        }
+    }
+    private void BindOrderDetails(int OrderID)
+    {
+        //string Bcommet = string.Empty;
+        DataTable dtOrder = orderObj.OrderList(OrderID);
+        if (dtOrder.Rows.Count > 0)
+        {
+            DataRow dr = dtOrder.Rows[0];
+            lblOrderId.Text = dr["OrderID"].ToString();
+            lblPOID.Text = dr["PurchaseOrderID"].ToString();
+            Session["PurchaseOrderID"] = lblPOID.Text;
+            Session["PODate"] = dtOrder.Rows[0]["OrderDate"].ToString();
+            hfPdf.NavigateUrl = dr["PurchaseOrderPath"].ToString();
+            lblOtype.Text = dr["OrderType"].ToString();
+
+            if (!string.IsNullOrEmpty(dr["BranchOrderId"].ToString()))
+            {
+                //btnPlaceBrnchOrder.Enabled = false;
+                btnPlaceBrnchOrder.Visible = false;
+                btnDisable.Enabled = false;
+                btnDisable.Visible = true;
+                btnDisable.ForeColor = System.Drawing.ColorTranslator.FromHtml("Gray");
+            }
+            if (dr["OrderType"].ToString() == "order")
+            {
+                lblLotsample.Text = dr["LotSampleID"].ToString();
+                btnPlaceBrnchOrder.Visible = true;
+                btnDisable.Visible = false;
+            }
+            if (!string.IsNullOrEmpty(lblLotsample.Text))
+                lblLotsample.Visible = true;
+            else
+                lblLotsample.Visible = false;
+            if (dr["AdminOrderStatus"].ToString() == "DISPATCH")
+                Enablecontrols();
+            if (dr["AdminOrderStatus"].ToString() == "BLENDING")
+            {
+                if (dr["OrderType"].ToString() == "LotSample")
+                    Enacontrols();
+            }
+            //ddlOrderStatus.Items.FindByValue(dr["OrderStatus"].ToString().ToUpper()).Selected = true;
+            Session["BuyerId"] = dr["BuyerID"].ToString();
+            hlBuyer.Text = dr["BuyerCompanyName"].ToString();
+            lblBranchOrderID.Text = dr["BranchOrderId"].ToString();
+            lblBOtype.Text = dr["BOrderType"].ToString();
+            lblBPOID.Text = dr["BranchPOID"].ToString();
+            lbtnBranchName.Text = dr["Bname"].ToString();
+            hlBranchPDF.NavigateUrl = dr["BranchOrderPath"].ToString();
+            txtComments.Text = dr["O_Comments"].ToString().Replace("<br/>", System.Environment.NewLine);
+            txtBComments.Text = dr["B_Comments"].ToString().Replace("<br/>", System.Environment.NewLine);
+            ddlBStatus.ClearSelection();
+            if (!string.IsNullOrEmpty(dr["bOrderStatus"].ToString()))
+                ddlBStatus.Items.FindByValue(dr["bOrderStatus"].ToString().ToUpper()).Selected = true;
+        }
+    }
+    private void Enablecontrols()
+    {
+        btnInvoice.Visible = true;
+        btnPacking.Visible = true;
+        btnHazsea.Visible = true;
+        btnHazAir.Visible = true;
+        btnCoverLetter.Visible = true;
+        btnFLetter.Visible = true;
+        btnLable.Visible = true;
+        btnPP.Visible = true;
+        btnAR.Visible = true;
+        btnSP.Visible = true;
+        btnbo.Visible = true;
+        btnCRY.Visible = true;
+        btnCRYp.Visible = true;
+        btnDisableInv.Visible = false;
+        btnDisablePack.Visible = false;
+        btnDisableHazSea.Visible = false;
+        btnDisableHazAir.Visible = false;
+        btnDisableCL.Visible = false;
+        btnDisableFL.Visible = false;
+        btnDisableLabel.Visible = false;
+        btnDisablePP.Visible = false;
+        btnDisableAR.Visible = false;
+        btnDisableSP.Visible = false;
+        btnDisablebo.Visible = false;
+        btnDisableCRY.Visible = false;
+        btnDisableCRYp.Visible = false;
+    }
+    private void Enacontrols()
+    {
+        btnInvoice.Visible = true;
+        btnDisableInv.Visible = false;
+        btnCoverLetter.Visible = true;
+        btnDisableCL.Visible = false;
+    }
+    private void BindgvPackingDetails()
+    {
+        string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        DataTable dtPackingDetils = orderObj.PackingDetails(Convert.ToInt32(OrderID), Convert.ToInt32(!string.IsNullOrEmpty(lblBranchOrderID.Text) ? lblBranchOrderID.Text : "0"));
+        if (dtPackingDetils.Rows.Count > 0)
+        {
+            if (dtPackingDetils.Rows.Count == 1)
+            {
+                gvPackingDetails.DataSource = dtPackingDetils;
+                gvPackingDetails.DataBind();
+            }
+            else
+            {
+                for (int i = 0; i < dtPackingDetils.Rows.Count; i++)
+                {
+                    if (dtPackingDetils.Rows[i]["Blending_BatchID"].ToString() == string.Empty || dtPackingDetils.Rows[i]["Blending_BatchID"].ToString() == "")
+                    {
+                        dtPackingDetils.Rows[i].Delete();
+                    }
+                }
+                gvPackingDetails.DataSource = dtPackingDetils;
+                gvPackingDetails.DataBind();
+            }
+        }
+    }
+    private void BindddlOrderProductDetails()
+    {
+        string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        int branchOrderID = Convert.ToInt32(lblBranchOrderID.Text);
+        ddlSelectProduct.DataSource = orderObj.OrderProductList(Convert.ToInt32(OrderID), branchOrderID);
+        ddlSelectProduct.DataTextField = "ProductName";
+        ddlSelectProduct.DataValueField = "ProductID";
+        ddlSelectProduct.DataBind();
+        ddlSelectProduct.Items.Insert(0, MudarApp.AddListItem());
+    }
+    private void BindddlBlendProductDetails()
+    {
+        string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        int branchOrderID = Convert.ToInt32(lblBranchOrderID.Text);
+        ddlBlendProduct.DataSource = orderObj.OrderProductList(Convert.ToInt32(OrderID), branchOrderID);
+        ddlBlendProduct.DataTextField = "ProductName";
+        ddlBlendProduct.DataValueField = "ProductID";
+        ddlBlendProduct.DataBind();
+        ddlBlendProduct.Items.Insert(0, MudarApp.AddListItem());
+    }
+    private void BindddlTestProductDetails()
+    {
+        string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        int branchOrderID = Convert.ToInt32(lblBranchOrderID.Text);
+        ddlTestProduct.DataSource = orderObj.OrderProductList(Convert.ToInt32(OrderID), branchOrderID);
+        ddlTestProduct.DataTextField = "ProductName";
+        ddlTestProduct.DataValueField = "ProductID";
+        ddlTestProduct.DataBind();
+        ddlTestProduct.Items.Insert(0, MudarApp.AddListItem());
+    }
+    private void BindOrderReportPathdetails()
+    {
+        string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        DataTable dtORPD = reportObj.OrderReportsPathGetDetails(Convert.ToInt32(OrderID), Convert.ToInt32(lblBranchOrderID.Text));
+        if (dtORPD.Rows.Count > 0)
+        {
+            if (!string.IsNullOrEmpty(dtORPD.Rows[0]["Invoice"].ToString()))
+            {
+                string[] path = dtORPD.Rows[0]["Invoice"].ToString().Split('/');
+                string[] path2 = path[path.Length - 1].Split('.');
+                string InvoiceID = path2[0].ToString();
+                hlInvoice.Text = InvoiceID;
+            }
+            hlInvoice.NavigateUrl = dtORPD.Rows[0]["Invoice"].ToString();
+            hlPacking.NavigateUrl = dtORPD.Rows[0]["Packing"].ToString();
+            hlCoverLetter.NavigateUrl = dtORPD.Rows[0]["Cover_Letter"].ToString();
+            hlFIRCover.NavigateUrl = dtORPD.Rows[0]["Fir_Cover_Letter"].ToString();
+            hlHazSea.NavigateUrl = dtORPD.Rows[0]["Non_Haz_Sea"].ToString();
+            hlHazAir.NavigateUrl = dtORPD.Rows[0]["Non_Haz_Air"].ToString();
+            bindReports(dtORPD);
+        }
+    }
+    private void BindBranchOrderReport()
+    {
+        string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        if (!string.IsNullOrEmpty(lblBranchOrderID.Text))
+        {
+            DataTable dtORPD = reportObj.OrderReportsPathGetDetails(Convert.ToInt32(OrderID), Convert.ToInt32(lblBranchOrderID.Text));
+            if (dtORPD.Rows.Count > 0)
+            {
+                hlBInvoice.NavigateUrl = dtORPD.Rows[0]["BInvoice"].ToString();
+                hlBLR.NavigateUrl = dtORPD.Rows[0]["BLR"].ToString();
+                hlBGLCInfo.NavigateUrl = dtORPD.Rows[0]["BGLCInfo"].ToString();
+                hlBTruckBill.NavigateUrl = dtORPD.Rows[0]["BTruckBill"].ToString();
+
+                btnBInvoice.Enabled = string.IsNullOrEmpty(hlBInvoice.NavigateUrl) ? true : false;
+                btnBGLCInfo.Enabled = string.IsNullOrEmpty(hlBGLCInfo.NavigateUrl) ? true : false;
+                btnBTruckBill.Enabled = string.IsNullOrEmpty(hlBTruckBill.NavigateUrl) ? true : false;
+                btnBLR.Enabled = string.IsNullOrEmpty(hlBLR.NavigateUrl) ? true : false;
+            }
+        }
+    }
+    private void ReportControlsOperations()
+    {
+        if (!string.IsNullOrEmpty(hlInvoice.Text))
+        {
+            btnInvoice.Enabled = false;
+        }
+        if (!string.IsNullOrEmpty(hlPacking.Text))
+        {
+            btnInvoice.Enabled = false;
+        }
+    }
+    protected void btnSubmit_Click(object sender, EventArgs e)
+    {
+        bool result = false;
+        if (ddlOrderStatus.SelectedItem.Text == "NEW")
+            return;
+        else
+            result = orderObj.OrderDetails_UPD(Convert.ToInt32(lblOrderId.Text), ddlOrderStatus.SelectedItem.Text, "Raghu", "<br/>" + string.Format("{0:dd MMM yyyy}", DateTime.Now) + ' ' + ddlOrderStatus.SelectedItem.Text);
+    }
+    protected void btnBSubmit_Click(object sender, EventArgs e)
+    {
+        bool result = false;
+        if (ddlBStatus.SelectedItem.Text == "NEW")
+            return;
+        else
+            result = orderObj.BranchOrderDetails_UPD(Convert.ToInt32(lblBranchOrderID.Text), ddlBStatus.SelectedItem.Text, "Raghu", "<br/>" + string.Format("{0:dd MMM yyyy}", DateTime.Now) + ' ' + ddlBStatus.SelectedItem.Text);
+    }
+    protected void btnInvoice_Click(object sender, EventArgs e)
+    {
+        Session["BranchOrderID_S"] = lblBranchOrderID.Text;
+        Response.Redirect("~/Reports/InvoiceReport.aspx");
+    }
+    protected void btnPlaceBrnchOrder_Click(object sender, EventArgs e)
+    {
+        Response.Redirect("~/Orders/BranchOrder.aspx");
+    }
+    protected void btnGenerateBatchID_Click(object sender, EventArgs e)
+    {
+        MudarApp APP = new MudarApp();
+        DataTable dt = pr.GetProductCode(Convert.ToInt32(ddlSelectProduct.SelectedValue));
+        string year = DateTime.Now.Year.ToString();
+        string[] yy = year.Split('2');
+        string[] yy2 = yy[0].Split('0');
+        lblBatchID.Text = APP.GenerateLotNumber(dt.Rows[0]["ProductCode"].ToString(), yy2[0].ToString());
+        if (!string.IsNullOrEmpty(lblBatchID.Text))
+            btnGenerateBatchID.Visible = false;
+        //lblBatchID.Text = APP.GenerateBatchID(Convert.ToInt32(ddlSelectProduct.SelectedValue));
+    }
+    protected void ddlBStatus_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        divCollectingDetails.Visible = false;
+        divPackingDetails.Visible = false;
+        divBuyerReports.Visible = false;
+        divBlendingDetails.Visible = false;
+        divFreeze.Visible = false;
+        divTesting.Visible = false;
+        if (ddlBStatus.SelectedValue == "COLLECTING")
+        {
+            divCollectingDetails.Visible = true;
+        }
+        else if (ddlBStatus.SelectedValue == "PACKING")
+        {
+            divPackingDetails.Visible = true;
+            BindgvPackingDetails();
+        }
+        else if (ddlBStatus.SelectedValue == "DOCUMENTING")
+        {
+            divBuyerReports.Visible = true;
+        }
+        else if (ddlBStatus.SelectedValue == "BLENDING")
+        {
+            divBlendingDetails.Visible = true;
+        }
+        else if (ddlBStatus.SelectedValue == "FREEZE")
+        {
+            divFreeze.Visible = true;
+            BindFreeze();
+        }
+        else if (ddlBStatus.SelectedValue == "TESTING")
+        {
+            divTesting.Visible = true;
+        }
+    }
+    #region Admin:Generate Docus
+    protected void btnPacking_Click(object sender, EventArgs e)
+    {
+        Session["BranchOrderID_S"] = lblBranchOrderID.Text;
+        Response.Redirect("~/Reports/PackingReport.aspx");
+    }
+    protected void btnLetter_Click(object sender, EventArgs e)
+    {
+        Session["BranchOrderID_S"] = lblBranchOrderID.Text;
+        Response.Redirect("~/Reports/CoverLetter.aspx");
+    }
+    protected void btnLable_Click(object sender, EventArgs e)
+    {
+        Session["BranchOrderID_S"] = lblBranchOrderID.Text;
+        Response.Redirect("~/Reports/LabelReport.aspx");
+    }
+    private void bindReports(DataTable dtORPD)
+    {
+        int pCount = ddlSelectProduct.Items.Count - 1;
+        DataTable report = new DataTable();
+        report.Columns.Add("ProductName");
+        report.Columns.Add("PP");
+        report.Columns.Add("AR");
+        report.Columns.Add("SP");
+        report.Columns.Add("CRY");
+        report.Columns.Add("CRY_P");
+        report.Columns.Add("BO");
+        report.Columns.Add("LABEL");
+
+        for (int count = 0; count < pCount; count++)
+        {
+            string[] PP = dtORPD.Rows[0]["PP"].ToString().Split('$');
+            string[] LABEL = dtORPD.Rows[0]["LABEL"].ToString().Split('$');
+            string[] AR = dtORPD.Rows[0]["AR"].ToString().Split('$');
+            string[] SP = dtORPD.Rows[0]["SP"].ToString().Split('$');
+            string[] CRY = dtORPD.Rows[0]["CRY"].ToString().Split('$');
+            string[] CRY_P = dtORPD.Rows[0]["CRY_P"].ToString().Split('$');
+            string[] BO = dtORPD.Rows[0]["BO"].ToString().Split('$');
+            DataRow drNew = report.NewRow();
+            drNew["ProductName"] = ddlSelectProduct.Items[count + 1].Text;
+            drNew["PP"] = PP.Length > 1 ? PP[count].ToString() : string.Empty;
+            drNew["AR"] = AR.Length > 1 ? AR[count].ToString() : string.Empty;
+            drNew["SP"] = SP.Length > 1 ? SP[count].ToString() : string.Empty;
+            drNew["CRY"] = CRY.Length > 1 ? CRY[count].ToString() : string.Empty;
+            drNew["CRY_P"] = CRY_P.Length > 1 ? CRY_P[count].ToString() : string.Empty;
+            drNew["BO"] = BO.Length > 1 ? BO[count].ToString() : string.Empty;
+            drNew["LABEL"] = LABEL.Length > 1 ? LABEL[count].ToString() : string.Empty;
+            report.Rows.Add(drNew);
+            btnLable.Enabled = LABEL.Length > 1 ? false : true;
+            btnPP.Enabled = PP.Length > 1 ? false : true;
+            btnAR.Enabled = AR.Length > 1 ? false : true;
+            btnSP.Enabled = SP.Length > 1 ? false : true;
+            btnbo.Enabled = BO.Length > 1 ? false : true;
+            btnCRY.Enabled = CRY.Length > 1 ? false : true;
+            btnCRYp.Enabled = CRY_P.Length > 1 ? false : true;
+        }
+        gvReports.DataSource = report;
+        gvReports.DataBind();
+    }
+    protected void btnPP_Click(object sender, EventArgs e)
+    {
+        Session["BranchOrderID_S"] = lblBranchOrderID.Text;
+        Response.Redirect("~/Reports/COA-PP.aspx");
+    }
+    protected void btnAR_Click(object sender, EventArgs e)
+    {
+        Session["BranchOrderID_S"] = lblBranchOrderID.Text;
+        Response.Redirect("~/Reports/COA-AR.aspx");
+    }
+    protected void btnSP_Click(object sender, EventArgs e)
+    {
+        Session["BranchOrderID_S"] = lblBranchOrderID.Text;
+        Response.Redirect("~/Reports/COA-SP.aspx");
+    }
+    protected void btnCRY_Click(object sender, EventArgs e)
+    {
+        Session["BranchOrderID_S"] = lblBranchOrderID.Text;
+        Response.Redirect("~/Reports/COA-CRY.aspx");
+    }
+    protected void btnCRYp_Click(object sender, EventArgs e)
+    {
+        Session["BranchOrderID_S"] = lblBranchOrderID.Text;
+        Response.Redirect("~/Reports/COA-CRY-P.aspx");
+    }
+    protected void btnFLetter_Click(object sender, EventArgs e)
+    {
+        Session["BranchOrderID_S"] = lblBranchOrderID.Text;
+        Response.Redirect("~/Reports/FirCoverLetter.aspx");
+    }
+    protected void btnHazsea_Click(object sender, EventArgs e)
+    {
+        Session["BranchOrderID_S"] = lblBranchOrderID.Text;
+        Response.Redirect("~/Reports/nonHazSea.aspx");
+    }
+    protected void btnHazAir_Click(object sender, EventArgs e)
+    {
+        Session["BranchOrderID_S"] = lblBranchOrderID.Text;
+        Response.Redirect("~/Reports/nonHazAir.aspx");
+    }
+    protected void btnbo_Click(object sender, EventArgs e)
+    {
+        Session["BranchOrderID_S"] = lblBranchOrderID.Text;
+        Response.Redirect("~/Reports/COA-BO.aspx");
+    }
+    #endregion
+    #region Branh:Buyer Reports
+    protected void btnBInvoice_Click(object sender, EventArgs e)
+    {
+        string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        string Pdf_path = string.Empty;
+        if (fuBInvoice.FileName.Length > 0)
+        {
+            Pdf_path = WebConfigurationManager.AppSettings["orderpdf"].ToString() + OrderID.ToString() + "/BInvoice" + OrderID.ToString() + "_" + fuBInvoice.FileName;
+            fuBInvoice.PostedFile.SaveAs(Server.MapPath(Pdf_path));
+            reportObj.OrderReportsPathInsertandUpdate(Convert.ToInt32(OrderID), Convert.ToInt32(lblBranchOrderID.Text), Pdf_path, "Aslam", string.Empty, rtypeObj.BInvoice);
+            BindBranchOrderReport();
+        }
+    }
+    protected void btnBGLCInfo_Click(object sender, EventArgs e)
+    {
+        string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        string Pdf_path = string.Empty;
+        if (fuBGLCInfo.FileName.Length > 0)
+        {
+            Pdf_path = WebConfigurationManager.AppSettings["orderpdf"].ToString() + OrderID.ToString() + "/BGLC" + OrderID.ToString() + "_" + fuBGLCInfo.FileName;
+            fuBGLCInfo.PostedFile.SaveAs(Server.MapPath(Pdf_path));
+            reportObj.OrderReportsPathInsertandUpdate(Convert.ToInt32(OrderID), Convert.ToInt32(lblBranchOrderID.Text), Pdf_path, "Aslam", string.Empty, rtypeObj.BGLCInfo);
+            BindBranchOrderReport();
+        }
+    }
+    protected void btnBTruckBill_Click(object sender, EventArgs e)
+    {
+        string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        string Pdf_path = string.Empty;
+        if (fuBTruckBill.FileName.Length > 0)
+        {
+            Pdf_path = WebConfigurationManager.AppSettings["orderpdf"].ToString() + OrderID.ToString() + "/BTruckBill" + OrderID.ToString() + "_" + fuBTruckBill.FileName;
+            fuBTruckBill.PostedFile.SaveAs(Server.MapPath(Pdf_path));
+            reportObj.OrderReportsPathInsertandUpdate(Convert.ToInt32(OrderID), Convert.ToInt32(lblBranchOrderID.Text), Pdf_path, "Aslam", string.Empty, rtypeObj.BTruckBill);
+            BindBranchOrderReport();
+        }
+    }
+    protected void btnBLR_Click(object sender, EventArgs e)
+    {
+        string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        string Pdf_path = string.Empty;
+        if (fuBLR.FileName.Length > 0)
+        {
+            Pdf_path = WebConfigurationManager.AppSettings["orderpdf"].ToString() + OrderID.ToString() + "/BLR" + OrderID.ToString() + "_" + fuBLR.FileName;
+            fuBLR.PostedFile.SaveAs(Server.MapPath(Pdf_path));
+            reportObj.OrderReportsPathInsertandUpdate(Convert.ToInt32(OrderID), Convert.ToInt32(lblBranchOrderID.Text), Pdf_path, "Aslam", string.Empty, rtypeObj.BLR);
+            BindBranchOrderReport();
+        }
+    }
+    protected void btnDownload_Click(object sender, EventArgs e)
+    {
+        string str = "";//((HiddenField)dlOrderHistory.Items[Index].FindControl("hfOrderPdf")).Value.ToString();
+        WebClient req = new WebClient();
+        HttpResponse response = HttpContext.Current.Response;
+        response.Clear();
+        response.ClearContent();
+        response.ClearHeaders();
+        response.Buffer = true;
+        //response.AddHeader("Content-Disposition", "attachment;filename=\"" + Server.MapPath(str) + "\"");
+        byte[] data = req.DownloadData(Server.MapPath(str));
+        response.BinaryWrite(data);
+        response.End();
+    }
+    #endregion
+    #region Old Code for Blending
+
+    private void CheckBlendingDetails()
+    {
+        for (int index = 0; index < gvBlending.Rows.Count; index++)
+        {
+            GridViewRow gvr = gvBlending.Rows[index];
+            if (!string.IsNullOrEmpty((gvr.Cells[0].FindControl("lblBBatchID") as Label).Text))
+            {
+                (gvr.Cells[0].FindControl("lblBBatchID") as Label).Visible = true;
+                (gvr.Cells[9].Controls[0] as Button).Visible = false;
+            }
+            else
+            {
+                (gvr.Cells[0].FindControl("lblBBatchID") as Label).Visible = false;
+                //(gvr.Cells[0].FindControl("btnBBatchID") as Button).Visible = true;
+            }
+        }
+    }
+    protected void gvBlending_RowCommand(object sender, GridViewCommandEventArgs e)
+    {
+        int index = Convert.ToInt32(e.CommandArgument);
+        GridViewRow gvr = gvBlending.Rows[index];
+
+        switch (e.CommandName)
+        {
+            case "Blending":
+                {
+                    MudarApp APP = new MudarApp();
+                    int productID = Convert.ToInt32((gvr.Cells[0].FindControl("lblBBatchID") as HiddenField).Value);
+                    DataTable dt = pr.GetProductCode(productID);
+                    string year = DateTime.Now.Year.ToString();
+                    string[] yy = year.Split('2');
+                    string[] yy2 = yy[1].Split('0');
+                    int plus = Convert.ToInt32(yy2[1].ToString()) + 1;
+                    string finyear = yy2[1].ToString() + plus.ToString();
+                    (gvr.Cells[0].FindControl("lblBBatchID") as Label).Text = APP.GenerateLotNumber(dt.Rows[0]["ProductCode"].ToString(), finyear);
+                }
+                break;
+        }
+        CheckBlendingDetails();
+    }
+    protected void gvBlending_RowCommand1(object sender, GridViewCommandEventArgs e)
+    {
+        int index = Convert.ToInt32(e.CommandArgument);
+        GridViewRow gvr = gvBlending.Rows[index];
+        switch (e.CommandName)
+        {
+            case "Blending":
+                {
+                    MudarApp APP = new MudarApp();
+                    int productID = Convert.ToInt32((gvr.Cells[0].FindControl("hfProductID") as HiddenField).Value);
+                    DataTable dt = pr.GetProductCode(productID);
+                    string year = DateTime.Now.Year.ToString();
+                    string[] yy = year.Split('2');
+                    string[] yy2 = yy[1].Split('0');
+                    int plus = Convert.ToInt32(yy2[1].ToString()) + 1;
+                    string finyear = yy2[1].ToString() + plus.ToString();
+                    (gvr.Cells[0].FindControl("lblBBatchID") as Label).Text = APP.GenerateLotNumber(dt.Rows[0]["ProductCode"].ToString(), finyear);
+                    int CTID = Convert.ToInt32(gvBlending.DataKeys[gvr.RowIndex].Value);
+                    bool result = false;
+                    result = orderObj.BlendingBatchNo(CTID, (gvr.Cells[0].FindControl("lblBBatchID") as Label).Text, "Aslam", MudarApp.Update);
+                    //BindgvPackingDetails();
+                }
+                break;
+        }
+        //BindBlendingDetails();
+    }
+    #endregion
+    #region Collecting
+    protected void btnFarmer_Click(object sender, EventArgs e)
+    {
+        if (!string.IsNullOrEmpty(ddlSelectProduct.SelectedValue))
+        {
+            divFarmerCollecting.Visible = true;
+            divPerOrderCollecting.Visible = true;
+            divFarmerCollecting.Style.Add("display", "block");
+            divPerOrderCollecting.Style.Add("display", "none");
+            btnFarmer.BackColor = System.Drawing.ColorTranslator.FromHtml("#FFFFB3");
+            btnFarmer.ForeColor = System.Drawing.ColorTranslator.FromHtml("#000000");
+            btnPreorder.BackColor = System.Drawing.ColorTranslator.FromHtml("#9B336F");
+            btnPreorder.ForeColor = System.Drawing.ColorTranslator.FromHtml("#FFFFFF");
+            divFarmerCollecting.Style.Add("display", "block");
+            trShowDetails.Visible = true;
+            trOtherFarmer.Visible = false;
+            btnDisablecollectSubmit.Visible = false;
+
+            if (Convert.ToDecimal(lblOrderQuantity.Text) == Convert.ToDecimal(lblpresentqty.Text))
+            {
+                btncollectSubmit.Visible = true;
+                trbtnCollectSubmit.Visible = true;
+
+            }
+
+            UpdateSelectedQuantityLabels();
+        }
+        else
+            ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('Plz Select the ProductName');</script>");
+    }
+    protected void btnPreorder_Click(object sender, EventArgs e)
+    {
+        //if (!string.IsNullOrEmpty(ddlSelectProduct.SelectedValue))
+        //    BindgvCollecingDetails(Convert.ToInt32(ddlSelectProduct.SelectedValue), "0");
+        //else
+        //    ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('Plz Select the ProductName');</script>");
+
+        if (!string.IsNullOrEmpty(ddlSelectProduct.SelectedValue))
+        {
+            divFarmerCollecting.Visible = true;
+            divPerOrderCollecting.Visible = true;
+            divFarmerCollecting.Style.Add("display", "none");
+            divPerOrderCollecting.Style.Add("display", "block");
+            btnPreorder.BackColor = System.Drawing.ColorTranslator.FromHtml("#FFFFB3");
+            btnPreorder.ForeColor = System.Drawing.ColorTranslator.FromHtml("#000000");
+            btnFarmer.BackColor = System.Drawing.ColorTranslator.FromHtml("#9B336F");
+            btnFarmer.ForeColor = System.Drawing.ColorTranslator.FromHtml("#FFFFFF");
+            trShowDetails.Visible = true;
+            trOtherFarmer.Visible = false;
+            btncollectSubmit.Visible = false;
+
+            btnDisablecollectSubmit.Visible = false;
+
+            if (Convert.ToDecimal(lblOrderQuantity.Text) == Convert.ToDecimal(lblpresentqty.Text))
+            {
+                btncollectSubmit.Visible = true;
+                trbtnCollectSubmit.Visible = true;
+            }
+            else
+            {
+                btncollectSubmit.Visible = false;
+                trbtnCollectSubmit.Visible = false;
+            }
+
+
+            UpdateSelectedQuantityLabels();
+        }
+        else
+            ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('Plz Select the ProductName');</script>");
+
+    }
+    protected void ddlSelectProduct_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (ddlSelectProduct.SelectedIndex > 0)
+        {
+            trShowICSList.Visible = true;
+            if (!string.IsNullOrEmpty(ddlSelectProduct.SelectedValue))
+                trShowICSList.Visible = true;//BindgvCollecingDetails(Convert.ToInt32(ddlSelectProduct.SelectedValue), "1");
+            lblpresentqty.Text = "0";
+            chkICSList.ClearSelection();
+            chkICSList_SelectedIndexChanged(sender, e);
+
+            btncollectSubmit.Visible = false;
+            trbtnCollectSubmit.Visible = false;
+            btnDisablecollectSubmit.Visible = false;
+            trSearchButtons.Visible = true;
+            btnFarmerSearchCancel.Visible = false;
+        }
+        else
+        {
+            chkICSList.ClearSelection();
+            //chkICSList.Items.Clear();
+
+            trShowICSList.Visible = false;
+            trButtonDetails.Visible = false;
+            trShowDetails.Visible = false;
+            trOtherFarmer.Visible = false;
+            gvPreorderCollection.DataSource = null;
+            gvPreorderCollection.DataBind();
+
+            gvCollecingDetails.DataSource = null;
+            gvCollecingDetails.DataBind();
+
+            divFarmerCollecting.Visible = false;
+            divPerOrderCollecting.Visible = false;
+            trbtnCollectSubmit.Visible = false;
+            trSearchButtons.Visible = true;
+            btnFarmerSearchCancel.Visible = false;
+        }
+    }
+
+    private DataTable GetFarmerCollectionData(int productId)
+    {
+        List<string> selectedValues = chkICSList.Items.Cast<ListItem>()
+        .Where(li => li.Selected)
+        .Select(li => "'" + li.Value + "'")
+        .ToList();
+        string chkSelectedVal = string.Empty;
+        if (selectedValues.Count > 0)
+            chkSelectedVal = string.Join(",", selectedValues.ToArray());
+        //divPerOrderCollecting.Visible = false;
+        //DataTable dtOrderCollect = orderObj.CollectedProductDetails(Convert.ToInt32(OrderID), productID, lblBranchOrderID.Text);
+        DataTable dtDate = settObj.GetStandDetails();
+        DataTable Pyear = new DataTable();
+        Pyear = settObj.GetProductionYear(Convert.ToDateTime(dtDate.Rows[0]["Date"].ToString()));
+        DataTable dtOrderCollect = orderObj.CollectedProductDetailsBasedonProductandICs(productId, Pyear.Rows[0]["ProductionYear"].ToString(), chkSelectedVal);
+        DataColumn dc = new DataColumn("AvailableQuantity", typeof(decimal));
+        dc.DefaultValue = 0;
+        dtOrderCollect.Columns.Add(dc);
+
+        dc = new DataColumn("Collect", typeof(bool));
+        dc.DefaultValue = false;
+        dtOrderCollect.Columns.Add(dc);
+        return dtOrderCollect;
+    }
+
+    private DataTable GetPreorderCollectionData(int productId)
+    {
+        List<string> selectedValues = chkICSList.Items.Cast<ListItem>()
+        .Where(li => li.Selected)
+        .Select(li => "'" + li.Value + "'")
+        .ToList();
+        string chkSelectedVal = string.Empty;
+        if (selectedValues.Count > 0)
+            chkSelectedVal = string.Join(",", selectedValues.ToArray());
+        DataTable dtOrderCollect = orderObj.PreOrderList_Product(productId, chkSelectedVal);
+        DataColumn dc = new DataColumn("CollectedQuantity", typeof(decimal));
+        dc.DefaultValue = 0;
+        dtOrderCollect.Columns.Add(dc);
+
+        dc = new DataColumn("Collect", typeof(bool));
+        dc.DefaultValue = false;
+        dtOrderCollect.Columns.Add(dc);
+        return dtOrderCollect;
+    }
+
+    private void BindgvCollecingDetails(int productID, string type)
+    {
+        decimal OrderNetQty;
+        lblBatchID.Text = string.Empty;
+        string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        List<string> selectedValues = chkICSList.Items.Cast<ListItem>()
+   .Where(li => li.Selected)
+   .Select(li => "'" + li.Value + "'")
+   .ToList();
+        string chkSelectedVal = string.Empty;
+        if (selectedValues.Count > 0)
+            chkSelectedVal = string.Join(",", selectedValues.ToArray());
+        if (type == "1")
+        {
+            //divPerOrderCollecting.Visible = false;
+            //DataTable dtOrderCollect = orderObj.CollectedProductDetails(Convert.ToInt32(OrderID), productID, lblBranchOrderID.Text);
+            DataTable dtDate = settObj.GetStandDetails();
+            DataTable Pyear = new DataTable();
+            DataTable dtBranchOrder = new DataTable();
+            dtBranchOrder = orderObj.GetBranchOrderDetails(OrderID, productID);
+            Pyear = settObj.GetProductionYear(Convert.ToDateTime(dtDate.Rows[0]["Date"].ToString()));
+            dtGlobalFarmerCollect = orderObj.CollectedProductDetailsBasedonProductandICs(productID, Pyear.Rows[0]["ProductionYear"].ToString(), chkSelectedVal);
+            DataColumn dc = new DataColumn("AvailableQuantity", typeof(decimal));
+            dc.DefaultValue = 0;
+            dtGlobalFarmerCollect.Columns.Add(dc);
+
+            dc = new DataColumn("Collect", typeof(bool));
+            dc.DefaultValue = false;
+            dtGlobalFarmerCollect.Columns.Add(dc);
+
+            if (dtGlobalFarmerCollect.Rows.Count > 0)
+            {
+
+                decimal qtyTotal = 0;
+                if (gvCollecingDetails.Rows.Count > 0)
+                {
+                    foreach (GridViewRow item in gvCollecingDetails.Rows)
+                    {
+                        if (((CheckBox)item.Cells[7].FindControl("cbCollecting")).Checked)
+                        {
+                            Guid pfarmerId = new Guid(gvCollecingDetails.DataKeys[item.RowIndex].Values["FarmerID"].ToString());
+                            int pfarmID = Convert.ToInt32(gvCollecingDetails.DataKeys[item.RowIndex].Values["FarmID"]);
+                            int pplantationId = Convert.ToInt32(gvCollecingDetails.DataKeys[item.RowIndex].Values["PlantationId"]);
+
+
+
+                            dtGlobalFarmerCollect.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == pfarmerId && a.Field<int>("FarmID") == pfarmID && a.Field<int>("PlantationId") == pplantationId)
+                    .ToList().ForEach(m =>
+                    {
+                        m["AvailableQuantity"] = Convert.ToDecimal(((TextBox)item.Cells[6].FindControl("txtCollectQty")).Text);
+                        m["Collect"] = ((CheckBox)item.Cells[7].FindControl("cbCollecting")).Checked;
+                        qtyTotal = qtyTotal + Convert.ToDecimal(((TextBox)item.Cells[6].FindControl("txtCollectQty")).Text);
+                    });
+
+
+                        }
+                    }
+                    //List<DataRow> lst = new List<DataRow>();
+                    //lst.AsEnumerable().CopyToDataTable<DataRow>();
+                }
+
+                Session["FarmerCollectDetails"] = null;
+                Session["FarmerCollectDetails"] = dtGlobalFarmerCollect;
+                //lblpresentqty.Text = qtyTotal.ToString();
+                UpdateSelectedQuantityLabels();
+                gvCollecingDetails.DataSource = dtGlobalFarmerCollect;
+                gvCollecingDetails.DataBind();
+                if (productID == 4)
+                {
+                    OrderNetQty = Convert.ToDecimal(dtBranchOrder.Rows[0]["NetQuantity"].ToString());
+                    lblOrderQuantity.Text = Math.Round(((OrderNetQty * 3) / 2), 2).ToString();
+                }
+                else
+                {
+                    OrderNetQty = Convert.ToDecimal(dtBranchOrder.Rows[0]["NetQuantity"].ToString());
+                    lblOrderQuantity.Text = Math.Round(OrderNetQty, 2).ToString();
+                }
+            }
+            else
+                gvCollecingDetails.DataBind();
+        }
+        if (type == "2")
+        {
+            //divFarmerCollecting.Visible = false;
+            DataTable dtOrderCollect = orderObj.PreOrderList_Product(productID, chkSelectedVal);
+            decimal d = dtOrderCollect.AsEnumerable().Select(m => Convert.ToDecimal(m.Field<int>("AvaliableQty"))).Sum();
+            if (d > 0)
+            {
+                btnRedirectPreorder.Visible = false;
+            }
+            else
+            {
+                btnRedirectPreorder.Visible = true;
+            }
+            DataColumn dc = new DataColumn("CollectedQuantity", typeof(decimal));
+
+            dc.DefaultValue = 0;
+            dtOrderCollect.Columns.Add(dc);
+
+            dc = new DataColumn("Collect", typeof(bool));
+            dc.DefaultValue = false;
+            dtOrderCollect.Columns.Add(dc);
+            if (dtOrderCollect.Rows.Count > 0)
+            {
+                decimal qtyTotal = 0;
+                if (gvPreorderCollection.Rows.Count > 0)
+                {
+                    foreach (GridViewRow item in gvPreorderCollection.Rows)
+                    {
+                        if (((CheckBox)item.Cells[5].FindControl("cbCollectingPreorder")).Checked)
+                        {
+                            //Guid pfarmerId = new Guid(gvPreorderCollection.DataKeys[item.RowIndex].Values["FarmerID"].ToString());
+                            //string pfarmID = Convert.ToString(gvPreorderCollection.DataKeys[item.RowIndex].Values["FarmID"]);
+                            //string pplantationId = Convert.ToString(gvPreorderCollection.DataKeys[item.RowIndex].Values["PlantationId"]);
+                            //int pcolltransid = Convert.ToInt32(gvPreorderCollection.DataKeys[item.RowIndex].Values["CollectionTransactionID"]);
+                            string blendingBatchId = Convert.ToString(gvPreorderCollection.Rows[item.RowIndex].Cells[0].ToString());
+                            if (!string.IsNullOrEmpty(blendingBatchId))
+                            {
+                                dtOrderCollect.AsEnumerable().Where(a => a.Field<string>("Blending_BatchID") == blendingBatchId)
+                        .ToList().ForEach(m =>
+                        {
+                            m["CollectedQuantity"] = Convert.ToDecimal(((TextBox)item.Cells[4].FindControl("txtCollectQty")).Text);
+                            m["Collect"] = ((CheckBox)item.Cells[5].FindControl("cbCollectingPreorder")).Checked;
+                            qtyTotal = qtyTotal + Convert.ToDecimal(((TextBox)item.Cells[4].FindControl("txtCollectQty")).Text);
+                        });
+                            }
+                        }
+                    }
+                }
+                Session["dtPreorder"] = null;
+                Session["dtPreorder"] = dtOrderCollect;
+                lblpresentqty.Text = qtyTotal.ToString();
+                gvPreorderCollection.DataSource = dtOrderCollect;
+                gvPreorderCollection.DataBind();
+                DataTable BranchOrderDB = orderObj.BranchOrderDetails(lblBPOID.Text);
+                DataRow[] drs = BranchOrderDB.Select("ProductID = " + productID);
+                lblOrderQuantity.Text = Math.Ceiling(Convert.ToDecimal(drs[0]["NetQuantity"])).ToString();
+
+            }
+        }
+    }
+    protected void btncollectSubmit_Click(object sender, EventArgs e)
+    {
+        int CollectionID = 0;
+        string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        int ProductID = Convert.ToInt32(ddlSelectProduct.SelectedValue);
+        if (Convert.ToDecimal(lblpresentqty.Text) == Convert.ToDecimal(lblOrderQuantity.Text))//.Replace(".00", ""))
+        {
+            DataTable dtFarmercollect = Session["dtFarmercollect"] as DataTable;
+            DataTable dtPreorder = Session["dtPreorder"] as DataTable;
+
+
+
+            if (dtFarmercollect != null && dtPreorder != null)
+            {
+                //PlantObj.SoldQuantity_Update(Convert.ToInt32(dtFarmercollect.Rows[0]["PlantationId"].ToString()), Convert.ToDecimal(dtFarmercollect.Rows[0]["CollectDt"]), "Aslam");
+                string plaintionIds = dtFarmercollect.Rows[0]["PlantationId"].ToString();
+                string[] plantIds = plaintionIds.Split(new char[] { ';' }, StringSplitOptions.None);
+                string soldTotalQtys = dtFarmercollect.Rows[0]["SoldQty"].ToString();
+                string[] soldQtys = soldTotalQtys.Split(new char[] { ';' }, StringSplitOptions.None);
+
+                for (int i = 0; i < plantIds.Length; i++)
+                {
+                    if (!string.IsNullOrEmpty(plantIds[i]) && !string.IsNullOrEmpty(soldQtys[i]))
+                    {
+                        PlantObj.SoldQuantity_Update(Convert.ToInt32(plantIds[i]), Convert.ToDecimal(soldQtys[i]), "Aslam");
+                    }
+                }
+
+                string collTransIds = dtPreorder.Rows[0]["PlantationId"].ToString();
+                string[] collTranscIds = collTransIds.Split(new char[] { ';' }, StringSplitOptions.None);
+                string collectedQty = dtPreorder.Rows[0]["CollectDt"].ToString();
+                string[] collectedQtys = collectedQty.Split(new char[] { ';' }, StringSplitOptions.None);
+
+                for (int i = 0; i < collTranscIds.Length; i++)
+                {
+                    if (!string.IsNullOrEmpty(collTranscIds[i]) && !string.IsNullOrEmpty(collectedQtys[i]))
+                    {
+                        orderObj.PreorderSoldQtyUpdateNew(Convert.ToInt32(collTranscIds[i]), Convert.ToDecimal(collectedQtys[i]), "Aslam");
+                    }
+                }
+
+                //orderObj.PreorderSoldQtyUpdate(Convert.ToInt32(dtPreorder.Rows[0]["CollectionTransactionID"].ToString()), Convert.ToInt32(dtPreorder.Rows[0]["CollectDt"]), "Aslam");
+                result = orderObj.ProductsCollection_Insert(ref CollectionID, Convert.ToInt32(OrderID), Convert.ToInt32(lblBranchOrderID.Text), "Aslam", string.Empty, MudarApp.Insert, false);
+                if (result)
+                    result = orderObj.ProductsCollectionTran_Insert("@" + dtPreorder.Rows[0]["Blending_BatchID"].ToString(), CollectionID, ProductID, dtFarmercollect.Rows[0]["FarmerId"].ToString() + '@' + dtPreorder.Rows[0]["FarmerId"].ToString(), txtOtherFarmers.Text, "0", txtCollectQTY.Text, dtFarmercollect.Rows[0]["CollectDt"].ToString() + '@' + dtPreorder.Rows[0]["CollectDt"].ToString(), dtFarmercollect.Rows[0]["FarmId"].ToString() + '@' + dtPreorder.Rows[0]["FarmId"].ToString(), dtFarmercollect.Rows[0]["LotNumber"].ToString() + '@' + dtPreorder.Rows[0]["LotNumber"].ToString(), "Aslam", string.Empty, MudarApp.Insert, dtFarmercollect.Rows[0]["PlantationId"].ToString() + '@' + dtPreorder.Rows[0]["PlantationId"].ToString());
+            }
+            else if (dtFarmercollect != null)
+            {
+                //PlantObj.SoldQuantity_Update(Convert.ToInt32(dtFarmercollect.Rows[0]["PlantationId"].ToString()), Convert.ToDecimal(dtFarmercollect.Rows[0]["CollectDt"]), "Aslam");
+                string plaintionIds = dtFarmercollect.Rows[0]["PlantationId"].ToString();
+                string[] plantIds = plaintionIds.Split(new char[] { ';' }, StringSplitOptions.None);
+                string soldTotalQtys = dtFarmercollect.Rows[0]["SoldQty"].ToString();
+                string[] soldQtys = soldTotalQtys.Split(new char[] { ';' }, StringSplitOptions.None);
+
+                for (int i = 0; i < plantIds.Length; i++)
+                {
+                    if (!string.IsNullOrEmpty(plantIds[i]) && !string.IsNullOrEmpty(soldQtys[i]))
+                    {
+                        PlantObj.SoldQuantity_Update(Convert.ToInt32(plantIds[i]), Convert.ToDecimal(soldQtys[i]), "Aslam");
+                    }
+                }
+                result = orderObj.ProductsCollection_Insert(ref CollectionID, Convert.ToInt32(OrderID), Convert.ToInt32(lblBranchOrderID.Text), "Aslam", string.Empty, MudarApp.Insert, false);
+                if (result)
+                    result = orderObj.ProductsCollectionTran_Insert("@", CollectionID, ProductID, dtFarmercollect.Rows[0]["FarmerId"].ToString(), txtOtherFarmers.Text, "0", txtCollectQTY.Text, dtFarmercollect.Rows[0]["CollectDt"].ToString(), dtFarmercollect.Rows[0]["FarmId"].ToString(), dtFarmercollect.Rows[0]["LotNumber"].ToString(), "Aslam", string.Empty, MudarApp.Insert, dtFarmercollect.Rows[0]["PlantationId"].ToString());
+            }
+            else
+            {
+                //orderObj.PreorderSoldQtyUpdate(Convert.ToInt32(dtPreorder.Rows[0]["CollectionTransactionID"].ToString()), Convert.ToInt32(dtPreorder.Rows[0]["CollectDt"]), "Aslam");
+                string collTransIds = dtPreorder.Rows[0]["PlantationId"].ToString();
+                string[] collTranscIds = collTransIds.Split(new char[] { ';' }, StringSplitOptions.None);
+                string collectedQty = dtPreorder.Rows[0]["CollectDt"].ToString();
+                string[] collectedQtys = collectedQty.Split(new char[] { ';' }, StringSplitOptions.None);
+
+                for (int i = 0; i < collTranscIds.Length; i++)
+                {
+                    if (!string.IsNullOrEmpty(collTranscIds[i]) && !string.IsNullOrEmpty(collectedQtys[i]))
+                    {
+                        orderObj.PreorderSoldQtyUpdate(Convert.ToInt32(collTranscIds[i]), Convert.ToInt32(collectedQtys[i]), "Aslam");
+                    }
+                }
+                result = orderObj.ProductsCollection_Insert(ref CollectionID, Convert.ToInt32(OrderID), Convert.ToInt32(lblBranchOrderID.Text), "Aslam", string.Empty, MudarApp.Insert, true);
+                if (result)
+                    result = orderObj.ProductsCollectionTran_Insert(dtPreorder.Rows[0]["Blending_BatchID"].ToString(), CollectionID, ProductID, dtPreorder.Rows[0]["FarmerId"].ToString(), txtOtherFarmers.Text, "0", txtCollectQTY.Text, dtPreorder.Rows[0]["CollectDt"].ToString(), dtPreorder.Rows[0]["FarmId"].ToString(), dtPreorder.Rows[0]["LotNumber"].ToString(), "Aslam", string.Empty, MudarApp.Insert, dtPreorder.Rows[0]["PlantationId"].ToString());
+            }
+
+            //if (Session["dtFarmercollect"] != null)
+            //{
+            //    if (Session["dtPreorder"] != null)
+            //    {
+            //        result = orderObj.ProductsCollection_Insert(ref CollectionID, Convert.ToInt32(OrderID), Convert.ToInt32(lblBranchOrderID.Text), "Aslam", string.Empty, MudarApp.Insert, false);
+            //        if (result)
+            //            result = orderObj.ProductsCollectionTran_Insert("@" + dtPreorder.Rows[0]["Blending_BatchID"].ToString(), CollectionID, ProductID, dtFarmercollect.Rows[0]["FarmerId"].ToString() + '@' + dtPreorder.Rows[0]["FarmerId"].ToString(), txtOtherFarmers.Text, "0", txtCollectQTY.Text, dtFarmercollect.Rows[0]["CollectDt"].ToString() + '@' + dtPreorder.Rows[0]["CollectDt"].ToString(), dtFarmercollect.Rows[0]["FarmId"].ToString() + '@' + dtPreorder.Rows[0]["FarmId"].ToString(), dtFarmercollect.Rows[0]["LotNumber"].ToString() + '@' + dtPreorder.Rows[0]["LotNumber"].ToString(), "Aslam", string.Empty, MudarApp.Insert, dtFarmercollect.Rows[0]["PlantationId"].ToString() + '@' + dtPreorder.Rows[0]["PlantationId"].ToString());
+            //    }
+            //    else
+            //    {
+            //        result = orderObj.ProductsCollection_Insert(ref CollectionID, Convert.ToInt32(OrderID), Convert.ToInt32(lblBranchOrderID.Text), "Aslam", string.Empty, MudarApp.Insert, false);
+            //        if (result)
+            //            result = orderObj.ProductsCollectionTran_Insert("@", CollectionID, ProductID, dtFarmercollect.Rows[0]["FarmerId"].ToString(), txtOtherFarmers.Text, "0", txtCollectQTY.Text, dtFarmercollect.Rows[0]["CollectDt"].ToString(), dtFarmercollect.Rows[0]["FarmId"].ToString(), dtFarmercollect.Rows[0]["LotNumber"].ToString(), "Aslam", string.Empty, MudarApp.Insert, dtFarmercollect.Rows[0]["PlantationId"].ToString());
+            //    }
+            //    btncollectSubmit.Visible = false;
+            //    btnDisablecollectSubmit.Visible = true;
+            //}
+            //else
+            //{
+            //    result = orderObj.ProductsCollection_Insert(ref CollectionID, Convert.ToInt32(OrderID), Convert.ToInt32(lblBranchOrderID.Text), "Aslam", string.Empty, MudarApp.Insert, true);
+            //    if (result)
+            //    {
+            //        result = orderObj.ProductsCollectionTran_Insert(dtPreorder.Rows[0]["Blending_BatchID"].ToString(), CollectionID, ProductID, dtPreorder.Rows[0]["FarmerId"].ToString(), txtOtherFarmers.Text, "0", txtCollectQTY.Text, dtPreorder.Rows[0]["CollectDt"].ToString(), dtPreorder.Rows[0]["FarmId"].ToString(), dtPreorder.Rows[0]["LotNumber"].ToString(), "Aslam", string.Empty, MudarApp.Insert, dtPreorder.Rows[0]["PlantationId"].ToString());
+            //        btncollectSubmit.Visible = false;
+            //        btnDisablecollectSubmit.Visible = true;
+            //    }
+            //}
+            btncollectSubmit.Visible = false;
+            btnDisablecollectSubmit.Visible = true;
+            BindddlOrderProductDetails();
+            ddlSelectProduct_SelectedIndexChanged(sender, e);
+        }
+        else
+            ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('Colleted Quantity is not Greater than the Order Quantity ');</script>");
+
+        #region oldcode
+
+        #endregion
+    }
+    protected void cbCollecting_CheckedChanged1(object sender, EventArgs e)
+    {
+        decimal chktest1 = 0;
+        decimal X = 0;
+        foreach (GridViewRow Row in gvCollecingDetails.Rows)
+        {
+            if (((CheckBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("cbCollecting")).Checked)
+            {
+                string quantity = ((TextBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty") as TextBox).Text;
+                Regex regEx = new Regex(@"^\d{1,5}(\.\d{1,2})?$");
+                if (string.IsNullOrEmpty(quantity))
+                {
+                    (gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("cbCollecting") as CheckBox).Checked = false;
+                    ((TextBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty") as TextBox).Text = "0";
+                    ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('!!! Please Enter the Quantity !!!');</script>");
+                }
+                else if (!regEx.Match(quantity).Success)
+                {
+                    (gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("cbCollecting") as CheckBox).Checked = false;
+                    ((TextBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty") as TextBox).Text = "0";
+                    ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('!!! Please Enter valid Quantity !!! ');</script>");
+                    return;
+                }
+                else if (Convert.ToDecimal(quantity) < 1)
+                {
+                    (gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("cbCollecting") as CheckBox).Checked = false;
+                    ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('!!! Quantity  be atleast one KG !!! ');</script>");
+                }
+                X = Convert.ToDecimal(gvCollecingDetails.Rows[Row.RowIndex].Cells[5].Text);
+                if (!string.IsNullOrEmpty(((TextBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty") as TextBox).Text))
+                {
+                    if (X >= Convert.ToDecimal(((TextBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty") as TextBox).Text))
+                    {
+                        chktest1 += Convert.ToDecimal(((TextBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty") as TextBox).Text);
+                    }
+                    else
+                    {
+                        (gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("cbCollecting") as CheckBox).Checked = false;
+                        ((TextBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty") as TextBox).Text = "0";
+                        ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('Plz Check the Available Quantity');</script>");
+                    }
+                }
+                else
+                    ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('Plz Enter the Quantity');</script>");
+            }
+            else
+                ((TextBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty") as TextBox).Text = "0";
+        }
+        lblpresentqty.Text = chktest1.ToString();
+        lblAlrcollQty.Text = chktest1.ToString();
+    }
+    protected void cbCollectingPreorder_CheckedChanged1(object sender, EventArgs e)
+    {
+        decimal chktest2 = 0;
+        decimal X = 0;
+        //lblpresentqty.Text = "0";
+        foreach (GridViewRow Row in gvPreorderCollection.Rows)
+        {
+            //CheckBox ChkBoxRows = (CheckBox)Row.FindControl("cbCollectingPreorder");
+            //ChkBoxRows.Checked = true;
+            if (((CheckBox)gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("cbCollectingPreorder")).Checked)
+            {
+                string quantity = ((TextBox)gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty") as TextBox).Text;
+                Regex regEx = new Regex(@"^\d{1,5}(\.\d{1,2})?$");
+                if (string.IsNullOrEmpty(quantity))
+                {
+                    (gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("cbCollectingPreorder") as CheckBox).Checked = false;
+                    ((TextBox)gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty") as TextBox).Text = "0";
+                    ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('!!! Please Enter the Quantity !!!');</script>");
+                }
+                else if (!regEx.Match(quantity).Success)
+                {
+                    (gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("cbCollectingPreorder") as CheckBox).Checked = false;
+                    ((TextBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty") as TextBox).Text = "0";
+                    ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('!!! Please Enter valid Quantity !!! ');</script>");
+                    return;
+                }
+                else if (Convert.ToDecimal(quantity) < 1)
+                {
+                    (gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("cbCollectingPreorder") as CheckBox).Checked = false;
+                    ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('!!! Quantity must be atleast one KG !!! ');</script>");
+
+                }
+                X = Convert.ToDecimal(gvPreorderCollection.Rows[Row.RowIndex].Cells[4].Text);
+                if (!string.IsNullOrEmpty(((TextBox)gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty") as TextBox).Text))
+                {
+                    if (X >= Convert.ToDecimal(((TextBox)gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty") as TextBox).Text))
+                    {
+                        chktest2 += Convert.ToDecimal(((TextBox)gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty") as TextBox).Text);
+                    }
+                    else
+                    {
+                        (gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("cbCollectingPreorder") as CheckBox).Checked = false;
+                        ((TextBox)gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty") as TextBox).Text = "0";
+                        ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('Plz Check the Available Quantity');</script>");
+                    }
+                }
+                else
+                    ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('Plz Enter the Quantity');</script>");
+
+            }
+            else
+                ((TextBox)gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty") as TextBox).Text = "0";
+        }
+        lblpresentqty.Text = chktest2.ToString();
+        if (Convert.ToDecimal(lblpresentqty.Text) + Convert.ToDecimal(lblAlrcollQty.Text) == Convert.ToDecimal(lblOrderQuantity.Text))
+            lblpresentqty.Text = (Convert.ToDecimal(lblpresentqty.Text) + Convert.ToDecimal(lblAlrcollQty.Text)).ToString();
+
+    }
+    protected void btnFarmercollt_Click(object sender, EventArgs e)
+    {
+        trOtherFarmer.Visible = false;
+        btnFarmer.BackColor = System.Drawing.ColorTranslator.FromHtml("#FFFFB3");
+        btnFarmer.ForeColor = System.Drawing.ColorTranslator.FromHtml("#000000");
+        DataTable dtFarmerCollectionData = GetFarmerCollectionData(Convert.ToInt32(ddlSelectProduct.SelectedValue));
+        Session["dtFarmercollect"] = new object();
+        DataTable dt1 = new DataTable();
+        dt1.Columns.Add("FarmerId");
+        dt1.Columns.Add("CollectDt");
+
+        dt1.Columns.Add("LotNumber");
+        dt1.Columns.Add("FarmId");
+        dt1.Columns.Add("PlantationId");
+        dt1.Columns.Add("SoldQty");
+        DataRow drdt1 = dt1.NewRow();
+        decimal totalQty = 0.0M;
+        string collectedQty = string.Empty;
+        foreach (GridViewRow Row in gvPreorderCollection.Rows)
+        {
+            if (((CheckBox)gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("cbCollectingPreorder")).Checked)
+            {
+                totalQty += Convert.ToDecimal(((TextBox)gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty")).Text);
+            }
+        }
+
+        foreach (GridViewRow Row in gvCollecingDetails.Rows)
+        {
+            if (((CheckBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("cbCollecting")).Checked)
+            {
+                Guid pfarmerId = new Guid(gvCollecingDetails.DataKeys[Row.RowIndex].Values["FarmerID"].ToString());
+                int pfarmID = Convert.ToInt32(gvCollecingDetails.DataKeys[Row.RowIndex].Values["FarmID"]);
+                int pplantationId = Convert.ToInt32(gvCollecingDetails.DataKeys[Row.RowIndex].Values["PlantationId"]);
+
+                dtFarmerCollectionData.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == pfarmerId && a.Field<int>("FarmID") == pfarmID && a.Field<int>("PlantationId") == pplantationId)
+        .ToList().ForEach(m =>
+        {
+            m["AvailableQuantity"] = Convert.ToDecimal(((TextBox)Row.Cells[6].FindControl("txtCollectQty")).Text);
+            m["Collect"] = true;
+        });
+                totalQty += Convert.ToDecimal(((TextBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty")).Text);
+                CollectDt += ((TextBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty")).Text + ";";
+                collectedQty += (Convert.ToDecimal(((TextBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty")).Text) + Convert.ToDecimal(gvCollecingDetails.Rows[Row.RowIndex].Cells[4].Text.Trim())).ToString() + ";";
+                LotNumber += gvCollecingDetails.Rows[Row.RowIndex].Cells[2].Text + ";";
+                DataKey dk = gvCollecingDetails.DataKeys[Row.RowIndex];
+                FarmerId += dk.Values["FarmerID"].ToString() + ";";
+                FarmId += dk.Values["FarmID"].ToString() + ";";
+                PlantationId += dk.Values["PlantationId"].ToString() + ";";
+                //result = PlantObj.SoldQuantity_Update(Convert.ToInt32(dk.Values["PlantationId"].ToString()), Convert.ToDecimal(((TextBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty")).Text) + Convert.ToDecimal(gvCollecingDetails.Rows[Row.RowIndex].Cells[4].Text.Trim()), "Aslam");
+            }
+        }
+        drdt1["FarmerId"] = FarmerId;
+        drdt1["LotNumber"] = LotNumber;
+        drdt1["CollectDt"] = CollectDt;
+        drdt1["FarmId"] = FarmId;
+        drdt1["PlantationId"] = PlantationId;
+        drdt1["SoldQty"] = collectedQty;
+        dt1.Rows.Add(drdt1);
+        Session["dtFarmercollect"] = dt1;
+        lblpresentqty.Text = totalQty.ToString();
+        lblAlrcollQty.Text = (Convert.ToDecimal(lblOrderQuantity.Text) - totalQty).ToString();
+        gvCollecingDetails.DataSource = dtFarmerCollectionData;
+        gvCollecingDetails.DataBind();
+        //divFarmerCollecting.Visible = false;
+        if (Convert.ToDecimal(lblOrderQuantity.Text) == Convert.ToDecimal(lblpresentqty.Text))
+        {
+            btncollectSubmit.Visible = true;
+            trbtnCollectSubmit.Visible = true;
+
+        }
+        else
+        {
+            btncollectSubmit.Visible = false;
+            trbtnCollectSubmit.Visible = false;
+        }
+
+        btnFarmercollt.Visible = false;
+        btnDisablecollectSave.Enabled = false;
+        btnDisablecollectSave.Visible = true;
+    }
+
+    protected void btnPrecollt_Click(object sender, EventArgs e)
+    {
+        DataTable dt = GetPreorderCollectionData(Convert.ToInt32(ddlSelectProduct.SelectedValue));
+        Session["dtPreorder"] = new object();
+        DataTable dt2 = new DataTable();
+        dt2.Columns.Add("FarmerId");
+        dt2.Columns.Add("CollectDt");
+        dt2.Columns.Add("LotNumber");
+        dt2.Columns.Add("FarmId");
+        dt2.Columns.Add("PlantationId");
+        dt2.Columns.Add("Blending_BatchID");
+        DataRow drdt2 = dt2.NewRow();
+        decimal totalQty = 0.0M;
+        foreach (GridViewRow Row in gvCollecingDetails.Rows)
+        {
+            if (((CheckBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("cbCollecting")).Checked)
+            {
+                totalQty += Convert.ToDecimal(((TextBox)gvCollecingDetails.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty")).Text);
+            }
+        }
+
+
+        foreach (GridViewRow Row in gvPreorderCollection.Rows)
+        {
+            if (((CheckBox)gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("cbCollectingPreorder")).Checked)
+            {
+                //Guid pfarmerId = new Guid(gvPreorderCollection.DataKeys[Row.RowIndex].Values["FarmerID"].ToString());
+                //string pfarmID = Convert.ToString(gvPreorderCollection.DataKeys[Row.RowIndex].Values["FarmID"]);
+                //string pplantationId = Convert.ToString(gvPreorderCollection.DataKeys[Row.RowIndex].Values["PlantationId"]);
+                //int pcolltransid = Convert.ToInt32(gvPreorderCollection.DataKeys[Row.RowIndex].Values["CollectionTransactionID"]);
+                string blendingBatchId = Convert.ToString(gvPreorderCollection.Rows[Row.RowIndex].Cells[0].ToString());
+                if (!string.IsNullOrEmpty(blendingBatchId))
+                {
+                    dt.AsEnumerable().Where(a => a.Field<string>("Blending_BatchID") == blendingBatchId)
+            .ToList().ForEach(m =>
+            {
+                m["CollectedQuantity"] = Convert.ToDecimal(((TextBox)Row.Cells[4].FindControl("txtCollectQty")).Text);
+                m["Collect"] = ((CheckBox)Row.Cells[5].FindControl("cbCollectingPreorder")).Checked;
+            });
+                }
+                //    if (pcolltransid > 0)
+                //    {
+                //        dt.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == pfarmerId && a.Field<string>("Blending_BatchID") == pfarmID && a.Field<string>("PlantationId") == PlantationId && a.Field<int>("CollectionTransactionID") == pcolltransid)
+                //.ToList().ForEach(m =>
+                //{
+                //    m["CollectedQuantity"] = Convert.ToDecimal(((TextBox)Row.Cells[4].FindControl("txtCollectQty")).Text);
+                //    m["Collect"] = ((CheckBox)Row.Cells[5].FindControl("cbCollectingPreorder")).Checked;
+                //});
+                //    }
+
+                totalQty += Convert.ToDecimal(((TextBox)gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty")).Text);
+                //collect += collect + Convert.ToInt32(((TextBox)gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty")).Text);
+                CollectDt += ((TextBox)gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty")).Text + ";";
+                LotNumber += gvPreorderCollection.Rows[Row.RowIndex].Cells[1].Text;
+                DataKey dk = gvPreorderCollection.DataKeys[Row.RowIndex];
+                BlendBatachID += gvPreorderCollection.Rows[Row.RowIndex].Cells[0].Text + ";";
+                FarmerId += dk.Values["FarmerID"].ToString();
+                FarmId += dk.Values["FarmID"].ToString();
+                PlantationId += dk.Values["CollectionTransactionID"].ToString() + ";";
+                //result = orderObj.PreorderSoldQtyUpdate(Convert.ToInt32(dk.Values["CollectionTransactionID"].ToString()), Convert.ToInt32(((TextBox)gvPreorderCollection.Rows[Row.RowIndex].Cells[0].FindControl("txtCollectQty")).Text), "Aslam");
+            }
+        }
+        drdt2["FarmerId"] = FarmerId;
+        drdt2["LotNumber"] = LotNumber;
+        drdt2["CollectDt"] = CollectDt;
+        drdt2["FarmId"] = FarmId;
+        drdt2["PlantationId"] = PlantationId;
+        drdt2["Blending_BatchID"] = BlendBatachID;
+        dt2.Rows.Add(drdt2);
+        UpdateSelectedQuantityLabels();
+        //lblpresentqty.Text = totalQty.ToString();
+        //lblAlrcollQty.Text = (Convert.ToDecimal(lblOrderQuantity.Text) - totalQty).ToString();
+        //gvPreorderCollection.DataSource = dt;
+        //gvPreorderCollection.DataBind();
+        Session["dtPreorder"] = dt2;
+        //divPerOrderCollecting.Visible = false;
+        if (Convert.ToDecimal(lblOrderQuantity.Text) == Convert.ToDecimal(lblpresentqty.Text))
+        {
+            btncollectSubmit.Visible = true;
+            trbtnCollectSubmit.Visible = true;
+        }
+        else
+        {
+            btncollectSubmit.Visible = false;
+            trbtnCollectSubmit.Visible = false;
+        }
+       // btnPrecollt.Visible = false;
+        btnPrecollt.Style.Add("display", "none");
+        btnDisablepreorderSave.Enabled = false;
+
+        //btnDisablepreorderSave.Visible = true;
+        btnDisablepreorderSave.Style.Add("display", "block");
+    }
+    protected void gvCollecingDetails_Sorting(object sender, GridViewSortEventArgs e)
+    {
+        SortExpression_p = e.SortExpression.ToString();
+        SortingFarmerCode(SortExpression_p);
+    }
+    public string dir
+    {
+        get
+        {
+            if (ViewState["dirState"].ToString() == "desc")
+            {
+                ViewState["dirState"] = "asc";
+            }
+            else
+            {
+                ViewState["dirState"] = "desc";
+            }
+            return ViewState["dirState"].ToString();
+        }
+        set
+        {
+            ViewState["dirState"] = value;
+        }
+    }
+    private void SortingFarmerCode(string SortExpression)
+    {
+        DataTable dt = (DataTable)Session["FarmerCollectDetails"];
+        DataView sortedView = new DataView(dt);
+        sortedView.Sort = SortExpression + " " + ViewState["dirState"];
+        gvCollecingDetails.DataSource = sortedView;
+        gvCollecingDetails.DataBind();
+    }
+
+    private void SortingSelectFarmerCode(string SortExpression)
+    {
+        DataTable dt = (DataTable)Session["SelectedCollectionItems"];
+        DataView sortedView = new DataView(dt);
+        sortedView.Sort = SortExpression + " " + ViewState["dirState"];
+        gvSelectedCollectionDetails.DataSource = sortedView;
+        gvSelectedCollectionDetails.DataBind();
+    }
+    #endregion
+    #region New Blending Code
+    private void BindBlendingDetails(string ProductID)
+    {
+        string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        double BlendQTY = 0.00;
+        lblBlendQty.Text = "0";
+        DataTable dtcollec = orderObj.GetCollectionID(OrderID);
+        DataTable dtBlending = orderObj.GetBliendingDetails(dtcollec.Rows[0]["CollectionID"].ToString(), ProductID);
+        if (dtBlending.Rows.Count > 0)
+        {
+            DataTable dtNewPre = new DataTable();
+            dtNewPre.Columns.Add("Blending_BatchID");
+            dtNewPre.Columns.Add("CollectionQty");
+            string[] FarmerID = dtBlending.Rows[0]["FarmerID"].ToString().Split('@');
+            string[] FarmID = dtBlending.Rows[0]["FarmID"].ToString().Split('@');
+            string[] Lotnumber = dtBlending.Rows[0]["Lotnumber"].ToString().Split('@');
+            string[] CollectionQty = dtBlending.Rows[0]["CollectionQty"].ToString().Split('@');
+            string[] BlendingBID = dtBlending.Rows[0]["Blending_BatchID"].ToString().Split('@');
+            if (BlendingBID[0].ToString() == string.Empty)
+            {
+                hfProductID.Value = dtBlending.Rows[0]["ProductID"].ToString();
+                lblCollectionID.Text = dtBlending.Rows[0]["CollectionID"].ToString();
+                DataTable dtNew = new DataTable();
+                dtNew.Columns.Add("FarmerID");
+                dtNew.Columns.Add("FarmID");
+                dtNew.Columns.Add("FarmerName");
+                dtNew.Columns.Add("Farmercode");
+                dtNew.Columns.Add("PlotCode");
+                dtNew.Columns.Add("Lotnumber");
+                dtNew.Columns.Add("CollectionQty");
+                string[] FarmerID1 = FarmerID[0].ToString().Split(';');
+                string[] FarmID1 = FarmID[0].ToString().Split(';');
+                string[] Lotnumber1 = Lotnumber[0].ToString().Split(';');
+                string[] CollectionQty1 = CollectionQty[0].ToString().Split(';');
+                for (int i = 0; i < FarmerID1.Length - 1; i++)
+                {
+                    DataRow drNew = dtNew.NewRow();
+                    drNew["FarmerID"] = FarmerID1[i].ToString();
+                    drNew["FarmID"] = FarmID1[i].ToString();
+                    drNew["Lotnumber"] = Lotnumber1[i].ToString();
+                    drNew["CollectionQty"] = CollectionQty1[i].ToString();
+                    BlendQTY = BlendQTY + Convert.ToDouble(CollectionQty1[i].ToString());
+                    DataTable dtFarmer = orderObj.GetBlendFarmerDetails(FarmerID1[i].ToString(), FarmID1[i].ToString());
+                    drNew["PlotCode"] = dtFarmer.Rows[0]["AreaCode"].ToString();
+                    drNew["FarmerName"] = dtFarmer.Rows[0]["FirstName"].ToString();
+                    drNew["Farmercode"] = dtFarmer.Rows[0]["FarmerCode"].ToString();
+                    dtNew.Rows.Add(drNew);
+                }
+                if (BlendingBID[1].ToString() != string.Empty)
+                {
+                    DataTable dtPreOrder = new DataTable();
+                    //dtPreOrder = orderObj.GetCollectionBlendDetails(dtBlending.Rows[0]["Blending_BatchID"].ToString());
+                    string[] BlendingBID2 = BlendingBID[1].ToString().Split(';');
+                    string[] CollectionQty2 = CollectionQty[1].ToString().Split(';');
+                    if (BlendingBID2.Length == 1)
+                    {
+                        DataRow drNew = dtNewPre.NewRow();
+                        drNew["Blending_BatchID"] = BlendingBID2[0].ToString();
+                        drNew["CollectionQty"] = CollectionQty2[0].ToString();
+                        BlendQTY += Convert.ToInt32(CollectionQty2[0].ToString());
+                        dtNewPre.Rows.Add(drNew);
+                        gvBlendPreorder.DataSource = dtNewPre;
+                        gvBlendPreorder.DataBind();
+                    }
+                    else
+                    {
+                        for (int j = 0; j < BlendingBID2.Length - 1; j++)
+                        {
+                            DataRow drNew = dtNewPre.NewRow();
+                            drNew["Blending_BatchID"] = BlendingBID2[j].ToString();
+                            drNew["CollectionQty"] = CollectionQty2[j].ToString();
+                            BlendQTY += Convert.ToInt32(CollectionQty2[j].ToString());
+                            dtNewPre.Rows.Add(drNew);
+                            gvBlendPreorder.DataSource = dtNewPre;
+                            gvBlendPreorder.DataBind();
+                        }
+                    }
+                }
+                lblNetQty.Text = BlendQTY.ToString();
+                Session["Blend"] = new object();
+                Session["Blend"] = dtNew;
+                DataTable dtcheck = orderObj.GetBlendDetailsBasedonBlendID(lblCollectionID.Text);
+                if (dtcheck.Rows.Count > 0)
+                {
+                    for (int k = 0; k < dtcheck.Rows.Count; k++)
+                    {
+                        if (lblCollectionID.Text == dtcheck.Rows[k]["CollectionID"].ToString())
+                        {
+                            BindNewBlendingDetails(Convert.ToInt32(dtcheck.Rows[k]["BlendingID"].ToString()), lblCollectionID.Text);
+                        }
+                    }
+                }
+                else
+                {
+                    divBlendDetails.Visible = true;
+                    lblNetQty.Visible = true;
+                    lblNetQty.Text = BlendQTY.ToString();
+                    lblBlendQty.Visible = true;
+                    gvBlending.DataSource = dtNew;
+                    gvBlending.DataBind();
+                }
+            }
+            else
+            {
+                DataTable dtPreOrder = new DataTable();
+                dtPreOrder = orderObj.GetCollectionBlendDetails(BlendingBID[0].ToString());
+                string[] BlendingBID2 = dtPreOrder.Rows[0]["Blending_BatchID"].ToString().Split(';');
+                string[] CollectionQty2 = dtPreOrder.Rows[0]["CollectionQty"].ToString().Split(';');
+                if (BlendingBID2.Length == 2)
+                {
+                    DataRow drNew = dtNewPre.NewRow();
+                    drNew["Blending_BatchID"] = BlendingBID2[0].ToString();
+                    drNew["CollectionQty"] = CollectionQty2[0].ToString();
+                    BlendQTY += Convert.ToInt32(CollectionQty2[0].ToString());
+                    dtNewPre.Rows.Add(drNew);
+                    gvBlendPreorder.DataSource = dtNewPre;
+                    gvBlendPreorder.DataBind();
+                    btnGenLot.Visible = false;
+                    lblLotNum.Text = BlendingBID2[0].ToString();
+                }
+                else
+                {
+                    for (int j = 0; j < BlendingBID2.Length - 1; j++)
+                    {
+                        DataRow drNew = dtNewPre.NewRow();
+                        drNew["Blending_BatchID"] = BlendingBID2[j].ToString();
+                        drNew["CollectionQty"] = CollectionQty2[j].ToString();
+                        BlendQTY += Convert.ToInt32(CollectionQty2[j].ToString());
+                        dtNewPre.Rows.Add(drNew);
+                    }
+                    gvBlendPreorder.DataSource = dtNewPre;
+                    gvBlendPreorder.DataBind();
+                }
+                divBlendDetails.Visible = true;
+                lblNetQty.Visible = true;
+                lblNetQty.Text = BlendQTY.ToString();
+                lblBlendQty.Visible = true;
+            }
+        }
+        else
+            ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('Blend is over in the PreOrder Collection');</script>");
+    }
+    protected void btnGenLot_Click(object sender, EventArgs e)
+    {
+        if (lblNetQty.Text == lblBlendQty.Text)
+        {
+            MudarApp APP = new MudarApp();
+            int productID = Convert.ToInt32(hfProductID.Value);
+            DataTable dt = pr.GetProductCode(productID);
+            DataTable dtFinyear = set.GetFinicalYear();
+            lblLotNum.Text = APP.GenerateLotNumber(dt.Rows[0]["ProductCode"].ToString(), dtFinyear.Rows[0]["FinYear"].ToString());
+        }
+        else
+            ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('Net Quantity Should be Equal to the Blend Quantity');</script>");
+    }
+    protected void ddlBlendProduct_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        BindBlendingDetails(ddlBlendProduct.SelectedValue);
+        hfProductID.Value = ddlBlendProduct.SelectedValue;
+    }
+    protected void btnBlendSubmit_Click(object sender, EventArgs e)
+    {
+        string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        DataTable dtcollec = orderObj.GetCollectionID(OrderID);
+        if (lblLotNum.Text == string.Empty || lblLotNum.Text == null)
+        {
+            ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('Plz click the Generate the Lot Button');</script>");
+        }
+        else
+        {
+            double alreadyBlendQty = 0.00;
+            bool result = false;
+            string FarmerId = string.Empty;
+            string FarmId = string.Empty;
+            string PlantationId = string.Empty;
+            string BlendDt = string.Empty;
+            string BatchNo = string.Empty;
+            int BlendID = 0;
+            int ProductID = Convert.ToInt32(ddlBlendProduct.SelectedValue);
+            if (gvBlending.Rows.Count > 0)
+            {
+                foreach (GridViewRow Row in gvBlending.Rows)
+                {
+                    if (((CheckBox)gvBlending.Rows[Row.RowIndex].Cells[0].FindControl("cbBlending")).Checked)
+                    {
+                        alreadyBlendQty = alreadyBlendQty + Convert.ToDouble(gvBlending.Rows[Row.RowIndex].Cells[6].Text);
+                        BlendDt += gvBlending.Rows[Row.RowIndex].Cells[6].Text + ";";
+                        BatchNo += gvBlending.Rows[Row.RowIndex].Cells[5].Text + ";";
+                        DataKey dk = gvBlending.DataKeys[Row.RowIndex];
+                        FarmerId += dk.Values["FarmerID"].ToString() + ";";
+                    }
+                }
+                result = orderObj.ProductsBlending_Insert(ref BlendID, Convert.ToInt32(lblCollectionID.Text), "Aslam", string.Empty, MudarApp.Insert);
+                if (result)
+                    result = orderObj.ProductsBlendingTran_Insert(BlendID, ProductID, FarmerId, "0", "0", "0", BlendDt, string.Empty, BatchNo, lblLotNum.Text, Convert.ToDecimal(lblBlendQty.Text), "Aslam", string.Empty, MudarApp.Insert, string.Empty);
+            }
+            else
+            {
+                result = orderObj.ProductsBlending_Insert(ref BlendID, Convert.ToInt32(dtcollec.Rows[0]["CollectionID"].ToString()), "Aslam", string.Empty, MudarApp.Insert);
+                if (result)
+                    result = orderObj.ProductsBlendingTran_Insert(BlendID, ProductID, string.Empty, "0", "0", "0", string.Empty, string.Empty, string.Empty, lblLotNum.Text, Convert.ToDecimal(lblBlendQty.Text), "Aslam", string.Empty, MudarApp.Insert, string.Empty);
+            }
+            BindNewBlendingDetails(BlendID, lblCollectionID.Text);
+            //lblAlrBlendQty.Text = alreadyBlendQty.ToString();
+            lblBlendQty.Text = "0";
+            lblLotNum.Text = string.Empty;
+        }
+    }
+    private void BindNewBlendingDetails(int BlendID, string CollectID)
+    {
+        DataTable dtNew = new DataTable();
+        dtNew.Columns.Add("FarmerID");
+        DataTable dtOldBlend = Session["Blend"] as DataTable;
+        DataTable dtNewBlend = orderObj.GetBlendDetailsBasedonBlendID(BlendID.ToString(), lblCollectionID.Text);
+        if (dtNewBlend.Rows.Count > 0)
+        {
+            string[] FarmerID = dtNewBlend.Rows[0]["FarmerID"].ToString().Split(';');
+            if (FarmerID.Length > 0)
+            {
+                for (int count = 0; count < FarmerID.Length; count++)
+                    for (int fid = 0; fid < dtOldBlend.Rows.Count; fid++)
+                    {
+                        if (FarmerID[count] == dtOldBlend.Rows[fid]["FarmerID"].ToString())
+                        {
+                            dtOldBlend.Rows[fid].Delete();
+                            dtOldBlend.AcceptChanges();
+                            fid -= 1;
+                        }
+                    }
+            }
+            if (dtOldBlend.Rows.Count > 0)
+            {
+                gvBlending.DataSource = dtOldBlend;
+                gvBlending.DataBind();
+                divBlendDetails.Visible = true;
+                lblNetQty.Visible = true;
+                lblBlendQty.Visible = true;
+                //lblAlrBlendQty.Visible = true;
+            }
+            else
+            {
+                gvBlending.DataSource = null;
+                gvBlending.DataBind();
+                divBlendDetails.Visible = false;
+                lblNetQty.Visible = false;
+                lblBlendQty.Visible = false;
+                lblAlrBlendQty.Visible = false;
+                BindddlBlendProductDetails();
+            }
+        }
+    }
+    protected void cbBlending_CheckedChanged1(object sender, EventArgs e)
+    {
+        lblBlendQty.Visible = true;
+        double Blend = 0.00;
+        foreach (GridViewRow Row in gvBlending.Rows)
+        {
+            if (((CheckBox)gvBlending.Rows[Row.RowIndex].Cells[0].FindControl("cbBlending")).Checked)
+            {
+                Blend += Convert.ToDouble(gvBlending.Rows[Row.RowIndex].Cells[6].Text);
+            }
+        }
+        lblBlendQty.Text = Blend.ToString();
+        lblAlrBlendQty.Text = Blend.ToString();
+    }
+    protected void cbBlendingPreorder_CheckedChanged1(object sender, EventArgs e)
+    {
+        lblBlendQty.Visible = true;
+        double Blend1 = 0;
+        foreach (GridViewRow row in gvBlendPreorder.Rows)
+        {
+            CheckBox ChkBoxRows = (CheckBox)row.FindControl("cbBlendingPreorder");
+            if (ChkBoxRows.Checked)
+                Blend1 += Convert.ToDouble(gvBlendPreorder.Rows[row.RowIndex].Cells[1].Text);
+        }
+        lblBlendQty.Text = Blend1.ToString();
+        if (Convert.ToInt32(lblBlendQty.Text) + Convert.ToInt32(lblAlrBlendQty.Text) == Convert.ToInt32(lblNetQty.Text))
+            lblBlendQty.Text = (Convert.ToInt32(lblBlendQty.Text) + Convert.ToInt32(lblAlrBlendQty.Text)).ToString();
+    }
+    #endregion
+    #region Packing
+    protected void btnPackingDetailsSubmit_Click(object sender, EventArgs e)
+    {
+        bool result = false;
+        foreach (GridViewRow Row in gvPackingDetails.Rows)
+        {
+            string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+            string GrossQty = ((TextBox)gvPackingDetails.Rows[Row.RowIndex].Cells[5].FindControl("txtGrossQty")).Text;
+            DataKey dk = gvPackingDetails.DataKeys[Row.RowIndex];
+            //string BatchID = dk.Values["BatchID"].ToString();
+            //string Lotnumber = dk.Values["Lotnumber"].ToString();
+            int ProductID = Convert.ToInt32(gvPackingDetails.Rows[Row.RowIndex].Cells[0].Text); //Convert.ToInt32(dk.Values["ProductID"].ToString());
+            string Packing25 = ((TextBox)gvPackingDetails.Rows[Row.RowIndex].Cells[0].FindControl("txtPacking25")).Text;
+            string Packing180 = ((TextBox)gvPackingDetails.Rows[Row.RowIndex].Cells[0].FindControl("txtPacking180")).Text;
+            result = orderObj.PackingDetailsUpdate(Convert.ToInt32(OrderID), ProductID, Convert.ToInt32(lblBranchOrderID.Text), Convert.ToDecimal(GrossQty), Convert.ToInt32(Packing25), Convert.ToInt32(Packing180), "bhanu", MudarApp.Update);
+        }
+        if (result)
+        {
+            BindgvPackingDetails();
+            btnPackingDetailsSubmit.Visible = false;
+            btnDisablePacking.Visible = true;
+        }
+    }
+    #endregion
+    #region Freeze
+    private void BindFreeze()
+    {
+        string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        DataTable dtFreeze = orderObj.
+		(OrderID, !string.IsNullOrEmpty(lblBranchOrderID.Text) ? lblBranchOrderID.Text : "0");
+
+        if (dtFreeze.Rows.Count > 0)
+        {
+            gvFreeze.DataSource = dtFreeze;
+            gvFreeze.DataBind();
+        }
+        else
+        { }
+    }
+    private void BindFreezeTransaction(string FID, string ProductID)
+    {
+        DataSet dsFT = orderObj.GetFreezeTran(FID, ProductID);
+        dlFreeze.DataSource = dsFT.Tables[0];
+        dlFreeze.DataBind();
+        if (dlFreeze.Items.Count > 0)
+        {
+            (dlFreeze.Items[0].FindControl("gvFreezeTran") as GridView).DataSource = dsFT.Tables[1];
+            (dlFreeze.Items[0].FindControl("gvFreezeTran") as GridView).DataBind();
+        }
+        Session["s_dlFreeze"] = dsFT;
+    }
+    protected void gvFreeze_RowCommand(object sender, GridViewCommandEventArgs e)
+    {
+        MudarApp APP = new MudarApp();
+        int index = Convert.ToInt32(e.CommandArgument);
+        int orderid = Convert.ToInt32(Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true));
+        bool result = false;
+        DataKey dk = (sender as GridView).DataKeys[index];
+        int fid = !string.IsNullOrEmpty(dk.Values["FreezeID"].ToString()) ? Convert.ToInt32(dk.Values["FreezeID"].ToString()) : 0;
+        int pid = Convert.ToInt32(dk.Values["ProductID"].ToString());
+        int qty = !string.IsNullOrEmpty((sender as GridView).Rows[index].Cells[1].Text) ? Convert.ToInt32((sender as GridView).Rows[index].Cells[1].Text) : 0;
+        //int productID = Convert.ToInt32(hfProductID.Value);
+        DataTable dt = pr.GetProductCode(pid);
+        string year = DateTime.Now.Year.ToString();
+        string[] yy = year.Split('2');
+        string[] yy2 = yy[1].Split('0');
+        int plus = Convert.ToInt32(yy2[1].ToString()) + 1;
+        string finyear = yy2[1].ToString() + plus.ToString();
+        string fBatchID = APP.GenerateFBatchID(pid);
+        switch (e.CommandName)
+        {
+            case "Freeze":
+                {
+                    if (fid == 0)
+                        result = orderObj.Freeze_Insert(orderid, Convert.ToInt32(lblBranchOrderID.Text), "Aslam", string.Empty, qty, pid, fBatchID, MudarApp.Insert, ref fid);
+                    BindFreezeTransaction(fid.ToString(), pid.ToString());
+                }
+                break;
+        }
+        BindFreeze();
+    }
+    protected void dlFreeze_ItemCommand(object source, DataListCommandEventArgs e)
+    {
+        int index = e.Item.ItemIndex;
+        switch (e.CommandName)
+        {
+            case "AddProduct":
+                {
+                    DataSet ds = (DataSet)Session["s_dlFreeze"];
+                    DataRow dr = ds.Tables[1].NewRow();
+                    dr["FreezeTransactionID"] = 0;
+                    dr["FreezeQuantity"] = 0;
+                    ds.Tables[1].Rows.Add(dr);
+                    (dlFreeze.Items[0].FindControl("gvFreezeTran") as GridView).DataSource = ds.Tables[1];
+                    (dlFreeze.Items[0].FindControl("gvFreezeTran") as GridView).DataBind();
+                }
+                break;
+        }
+    }
+    protected void btnFreezeSubmit_Click(object sender, EventArgs e)
+    {
+        GridView gvf = (dlFreeze.Items[0].FindControl("gvFreezeTran") as GridView);
+        DataTable dt = (Session["s_dlFreeze"] as DataSet).Tables[0];
+        int qty = 0;
+        for (int count = 0; count < gvf.Rows.Count; count++)
+        {
+            int fid = Convert.ToInt32(dt.Rows[0]["FreezeID"].ToString());
+            int pid = Convert.ToInt32(dt.Rows[0]["ProductID"].ToString());
+            int ftid = Convert.ToInt32(gvf.DataKeys[count].Value.ToString());
+            string ftPName = (gvf.Rows[count].Cells[0].FindControl("txtFProductName") as TextBox).Text;
+            string ftQty = (gvf.Rows[count].Cells[0].FindControl("txtFQuantity") as TextBox).Text;
+            qty += Convert.ToInt32(ftQty);
+            if (qty <= Convert.ToInt32(dt.Rows[0]["Quntatiy"].ToString()))
+            {
+                if (ftid == 0)
+                    orderObj.FreezeTran_INSandUPDandDEL(ftid, fid, pid, dt.Rows[0]["FBatchID"].ToString(), ftPName, ftQty, "Aslam", string.Empty, MudarApp.Insert);
+            }
+            else
+            {
+                //total quantity of received product is greater than quantity.
+                ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('Collected Quantity Shouldnot be greater than Total Quantity from Freezing');</script>");
+            }
+        }
+        if (dt.Rows.Count > 0)
+        {
+            BindFreezeTransaction(dt.Rows[0]["FreezeID"].ToString(), dt.Rows[0]["ProductID"].ToString());
+            //BindgvPackingDetails();
+        }
+    }
+    #endregion
+    #region Testing
+    protected void ddlTestProduct_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        BindTestingDetails(ddlTestProduct.SelectedValue);
+    }
+    private void BindTestingDetails(string ProductID)
+    {
+        DataTable dtTest = orderObj.GetTestFieldDataBasedonProduct(ProductID);
+        if (dtTest.Rows.Count > 0)
+        {
+            divTestResults.Visible = true;
+            divTestingButtons.Visible = true;
+            gvTesting.DataSource = dtTest;
+            gvTesting.DataBind();
+            Session["TestInfo"] = dtTest;
+            btnTestinsDisable.Visible = false;
+            btnTestingSubmit.Visible = true;
+        }
+    }
+    protected void gvTesting_RowCommand(object sender, GridViewCommandEventArgs e)
+    {
+        if (e.CommandName == "Add")
+        {
+            int index = Convert.ToInt32(e.CommandArgument);
+            DataTable ds = (DataTable)Session["TestInfo"];
+            DataRow drp = ds.NewRow();
+            ds.Rows.Add(drp);
+            gvTesting.DataSource = ds;
+            gvTesting.DataBind();
+            ds = Session["TestInfo"] as DataTable;
+
+        }
+        if (e.CommandName == "Remove")
+        {
+            int index = Convert.ToInt32(e.CommandArgument);
+            GridViewRow gvr = gvTesting.Rows[index];
+            if (index == 0)
+            {
+                ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('!!! U Don't Have Permission... !!!');</script>");
+                return;
+            }
+            else
+            {
+                (Session["TestInfo"] as DataTable).Rows.RemoveAt(index);
+                gvTesting.DataSource = (Session["TestInfo"] as DataTable);
+                gvTesting.DataBind();
+            }
+        }
+    }
+    protected void btnTestingSubmit_Click(object sender, EventArgs e)
+    {
+        bool result = false;
+        string OrderID = Encrypt_Decrypt.Decrypt(Session["sOrderID"].ToString().Trim(), true);
+        DataTable dtcollec = orderObj.GetCollectionID(OrderID);
+        foreach (GridViewRow Row in gvTesting.Rows)
+        {
+            TextBox txtpara = (TextBox)gvTesting.Rows[Row.RowIndex].Cells[0].FindControl("txtPara");
+            TextBox txtAValue = (TextBox)gvTesting.Rows[Row.RowIndex].Cells[0].FindControl("txtAValue");
+            TextBox txtLow = (TextBox)gvTesting.Rows[Row.RowIndex].Cells[0].FindControl("txtLow");
+            TextBox txtHigh = (TextBox)gvTesting.Rows[Row.RowIndex].Cells[0].FindControl("txtHigh");
+            TextBox txtTmethod = (TextBox)gvTesting.Rows[Row.RowIndex].Cells[0].FindControl("txtTmethod");
+            result = orderObj.InsertTestingResults(0, Convert.ToInt32(dtcollec.Rows[0]["CollectionID"].ToString()), Convert.ToInt32(ddlTestProduct.SelectedValue), txtpara.Text, txtTmethod.Text, txtLow.Text, txtHigh.Text, txtTmethod.Text, "Bhanu", string.Empty, MudarApp.Insert);
+        }
+        if (result == true)
+        {
+            divTestResults.Visible = false;
+            btnTestinsDisable.Visible = true;
+            btnTestingSubmit.Visible = false;
+            btnTestinsDisable.Visible = true;
+            BindddlTestProductDetails();
+        }
+    }
+    #endregion
+    protected void chkICSList_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (!string.IsNullOrEmpty(chkICSList.SelectedValue))
+        {
+            btnFarmer.Enabled = true;
+            btnPreorder.Enabled = true;
+            trButtonDetails.Visible = true;
+            //divPerOrderCollecting.Visible = false;
+            //divFarmerCollecting.Visible = false;
+            BindgvCollecingDetails(Convert.ToInt32(ddlSelectProduct.SelectedValue), "1");
+            BindgvCollecingDetails(Convert.ToInt32(ddlSelectProduct.SelectedValue), "2");
+            //UpdateQuantityLabels();
+            txtFarmerSearch.Text = string.Empty;
+            Session["SelectedCollectionItems"] = null;
+            btnFarmerCollectSearchapply_Click(sender, e);
+        }
+        else
+        {
+            btnFarmer.Enabled = false;
+            btnPreorder.Enabled = false;
+            trButtonDetails.Visible = false;
+            divPerOrderCollecting.Style.Add("display", "none");
+            divFarmerCollecting.Style.Add("display", "none");
+            trShowDetails.Visible = false;
+            trOtherFarmer.Visible = false;
+
+            btnFarmer.BackColor = System.Drawing.ColorTranslator.FromHtml("#9B336F");
+            btnFarmer.ForeColor = System.Drawing.ColorTranslator.FromHtml("#FFFFFF");
+            btnPreorder.BackColor = System.Drawing.ColorTranslator.FromHtml("#9B336F");
+            btnPreorder.ForeColor = System.Drawing.ColorTranslator.FromHtml("#FFFFFF");
+
+        }
+
+    }
+
+    private void UpdateQuantityLabels()
+    {
+        decimal qtyTotal = 0;
+        if (gvCollecingDetails.Rows.Count > 0)
+        {
+            foreach (GridViewRow item in gvCollecingDetails.Rows)
+            {
+                if (((CheckBox)item.Cells[7].FindControl("cbCollecting")).Checked)
+                {
+                    TextBox txt = (TextBox)item.Cells[6].FindControl("txtCollectQty");
+                    qtyTotal = qtyTotal + Convert.ToDecimal(txt.Text);
+                }
+            }
+
+        }
+
+        if (gvPreorderCollection.Rows.Count > 0)
+        {
+            foreach (GridViewRow item in gvPreorderCollection.Rows)
+            {
+                if (((CheckBox)item.Cells[6].FindControl("cbCollectingPreorder")).Checked)
+                {
+                    TextBox txt = (TextBox)item.Cells[5].FindControl("txtCollectQty");
+                    qtyTotal = qtyTotal + Convert.ToDecimal(txt.Text);
+                }
+            }
+
+        }
+        lblpresentqty.Text = qtyTotal.ToString();
+        lblAlrcollQty.Text = (Convert.ToDecimal(lblOrderQuantity.Text) - Convert.ToDecimal(lblpresentqty.Text)).ToString();
+
+    }
+
+    protected void btnFarmerSearch_Click(object sender, EventArgs e)
+    {
+        if (!String.IsNullOrEmpty(txtFarmerSearch.Text))
+        {
+            DataTable dt = Session["FarmerCollectDetails"] as DataTable;
+            decimal qtyTotal = 0;
+            List<MudarItemModel> listRows = new List<MudarItemModel>();
+            if (gvCollecingDetails.Rows.Count > 0)
+            {
+                foreach (GridViewRow item in gvCollecingDetails.Rows)
+                {
+                    if (((CheckBox)item.Cells[7].FindControl("cbCollecting")).Checked)
+                    {
+                        MudarItemModel itemModel = new MudarItemModel();
+                        Guid pfarmerId = itemModel.FarmerId = new Guid(gvCollecingDetails.DataKeys[item.RowIndex].Values["FarmerID"].ToString());
+                        int pfarmID = itemModel.FarmId = Convert.ToInt32(gvCollecingDetails.DataKeys[item.RowIndex].Values["FarmID"]);
+                        int pplantationId = itemModel.PlantationId = Convert.ToInt32(gvCollecingDetails.DataKeys[item.RowIndex].Values["PlantationId"]);
+
+                        dt.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == pfarmerId && a.Field<int>("FarmID") == pfarmID && a.Field<int>("PlantationId") == pplantationId)
+                  .ToList().ForEach(m =>
+                {
+                    itemModel.Quantity = Convert.ToDecimal(((TextBox)item.Cells[6].FindControl("txtCollectQty")).Text);
+                    //m["Collect"] = ((CheckBox)item.Cells[7].FindControl("cbCollecting")).Checked;
+                });
+                        listRows.Add(itemModel);
+                    }
+                }
+                Session["SearchFarmerCollectDetails"] = listRows;
+                //lblpresentqty.Text = qtyTotal.ToString();
+                //lblAlrcollQty.Text = (Convert.ToDecimal(lblOrderQuantity.Text) - Convert.ToDecimal(lblpresentqty.Text)).ToString();
+                UpdateSelectedQuantityLabels();
+            }
+
+
+            dt = Session["FarmerCollectDetails"] as DataTable;
+            string query = txtFarmerSearch.Text;
+            var mgg = dt.AsEnumerable().Where(m => m.Field<bool>("Collect") == false).Where(m => m.Field<string>("FarmerCode").StartsWith(txtFarmerSearch.Text, StringComparison.OrdinalIgnoreCase) || m.Field<string>("FirstName").IndexOf(txtFarmerSearch.Text, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+            gvCollecingDetails.DataSource = dt.AsEnumerable()
+                       .Where(mgg.Contains)
+                       .AsDataView();
+            gvCollecingDetails.DataBind();
+
+            trSearchButtons.Visible = true;
+            btnFarmerSearchCancel.Visible = true;
+            btnFarmercollt.Visible = false;
+
+        }
+        else
+        {
+            ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('Farmer Name / Code is mandatatory to search farmers !!!');</script>");
+        }
+    }
+    protected void btnFarmerSearchCancel_Click(object sender, EventArgs e)
+    {
+        txtFarmerSearch.Text = string.Empty;
+        DataTable dt = Session["FarmerCollectDetails"] as DataTable;
+        if (Session["SearchFarmerCollectDetails"] != null)
+        {
+            List<MudarItemModel> listPrevSelectedItems = Session["SearchFarmerCollectDetails"] as List<MudarItemModel>;
+            foreach (MudarItemModel item in listPrevSelectedItems)
+            {
+                Guid pfarmerId = item.FarmerId;
+                int pfarmID = item.FarmId;
+                int pplantationId = item.PlantationId;
+
+                dt.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == pfarmerId && a.Field<int>("FarmID") == pfarmID && a.Field<int>("PlantationId") == pplantationId)
+        .ToList().ForEach(m =>
+        {
+            m["AvailableQuantity"] = item.Quantity;
+            m["Collect"] = true;
+        });
+
+            }
+            Session["SearchFarmerCollectDetails"] = null;
+        }
+        gvCollecingDetails.DataSource = dt;
+        gvCollecingDetails.DataBind();
+        trSearchButtons.Visible = true;
+        btnFarmerSearchCancel.Visible = false;
+        btnFarmercollt.Visible = true;
+
+        UpdateSelectedQuantityLabels();
+    }
+    //protected void btnFarmerCollectSearchapply_Click(object sender, EventArgs e)
+    //{
+    //    //List<DataRow> listSelectedItems = new List<DataRow>();
+    //    DataTable dt = Session["FarmerCollectDetails"] as DataTable;
+
+
+    //    List<MudarItemModel> listMudarItems;
+    //    if (Session["SelectedCollectionItems"] == null)
+    //    {
+    //        listMudarItems = new List<MudarItemModel>();
+    //    }
+    //    else
+    //    {
+    //        listMudarItems = Session["SelectedCollectionItems"] as List<MudarItemModel>;
+    //    }
+
+    //    List<MudarItemModel> downGridModel = new List<MudarItemModel>();
+    //    //DataTable dtSelected = Session["SelectedCollectionItems"] as DataTable;
+    //    decimal qtyTotal = 0;
+    //    if (gvCollecingDetails.Rows.Count > 0)
+    //    {
+
+    //        foreach (GridViewRow item in gvCollecingDetails.Rows)
+    //        {
+    //            if (((CheckBox)item.Cells[7].FindControl("cbCollecting")).Checked)
+    //            {
+    //                MudarItemModel mudarItem = new MudarItemModel();
+    //                Guid pfarmerId = new Guid(gvCollecingDetails.DataKeys[item.RowIndex].Values["FarmerID"].ToString()); mudarItem.FarmerId = pfarmerId;
+    //                int pfarmID = Convert.ToInt32(gvCollecingDetails.DataKeys[item.RowIndex].Values["FarmID"]); mudarItem.FarmId = pfarmID;
+    //                int pplantationId = Convert.ToInt32(gvCollecingDetails.DataKeys[item.RowIndex].Values["PlantationId"]); mudarItem.PlantationId = pplantationId;
+
+    //                dt.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == pfarmerId && a.Field<int>("FarmID") == pfarmID && a.Field<int>("PlantationId") == pplantationId)
+    //        .ToList().ForEach(m =>
+    //        {
+    //            m["AvailableQuantity"] = mudarItem.Quantity = Convert.ToDecimal(((TextBox)item.Cells[6].FindControl("txtCollectQty")).Text);
+    //            m["Collect"] = ((CheckBox)item.Cells[7].FindControl("cbCollecting")).Checked;
+    //            qtyTotal = qtyTotal + Convert.ToDecimal(((TextBox)item.Cells[6].FindControl("txtCollectQty")).Text);
+    //            downGridModel.Add(mudarItem);
+    //            //if (dtSelected != null)
+    //            //{
+    //            //    DataRow dr = dtSelected.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == pfarmerId && a.Field<int>("FarmID") == pfarmID && a.Field<int>("PlantationId") == pplantationId).FirstOrDefault();
+    //            //    if (dr != null)
+    //            //    {
+    //            //        dr["AvailableQuantity"] = Convert.ToDecimal(((TextBox)item.Cells[6].FindControl("txtCollectQty")).Text);
+    //            //        listSelectedItems.Add(dr);
+    //            //    }
+    //            //    else
+    //            //    {
+    //            //        listSelectedItems.Add(m);
+    //            //    }
+    //            //}
+    //            //else
+    //            //{
+    //            //    listSelectedItems.Add(m);
+    //            //}
+
+    //        });
+    //                //listSelectedItems.AddRange(dt.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == pfarmerId && a.Field<int>("FarmID") == pfarmID && a.Field<int>("PlantationId") == pplantationId)
+    //                //            .ToList());
+
+    //            }
+    //        }
+
+    //        if (listMudarItems.Count > 0)
+    //        {
+    //            //comparision logic here
+    //            foreach (MudarItemModel item in downGridModel)
+    //            {
+    //                MudarItemModel ins = listMudarItems.Where(m => m.FarmerId == item.FarmerId && m.FarmId == item.FarmId && m.PlantationId == item.PlantationId).FirstOrDefault();
+    //                if (ins != null)
+    //                {
+    //                    listMudarItems.Where(m => m.FarmerId == item.FarmerId && m.FarmId == item.FarmId && m.PlantationId == item.PlantationId).ToList()
+    //                        .ForEach(m =>
+    //                        {
+    //                            m.Quantity = item.Quantity;
+    //                        });
+    //                }
+    //                else
+    //                {
+    //                    listMudarItems.Add(item);
+    //                }
+    //            }
+
+    //            List<MudarItemModel> tempItems = new List<MudarItemModel>();
+    //            tempItems.AddRange(listMudarItems);
+
+    //            foreach (MudarItemModel item in tempItems)
+    //            {
+    //                MudarItemModel ins = downGridModel.Where(m => m.FarmerId == item.FarmerId && m.FarmId == item.FarmId && m.PlantationId == item.PlantationId).FirstOrDefault();
+    //                if (ins == null)
+    //                {
+    //                    listMudarItems.Remove(item); ;
+    //                }
+    //            }
+    //        }
+    //        else
+    //        {
+    //            listMudarItems = downGridModel;
+    //        }
+    //        Session["SelectedCollectionItems"] = listMudarItems;
+
+
+    //        dt.AsEnumerable().Where(m => m.Field<bool>("Collect") == true)
+    //        .ToList().ForEach(m =>
+    //        {
+    //            m["AvailableQuantity"] = 0;
+    //            m["Collect"] = false;
+    //        });
+
+
+    //        List<DataRow> listSelectedItems = new List<DataRow>();
+    //        foreach (MudarItemModel item in listMudarItems)
+    //        {
+    //            DataRow dr = dt.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == item.FarmerId && a.Field<int>("FarmID") == item.FarmId && a.Field<int>("PlantationId") == item.PlantationId).FirstOrDefault();
+    //            if (dr != null)
+    //            {
+    //                dr["AvailableQuantity"] = item.Quantity;
+    //                dr["Collect"] = true;
+    //                listSelectedItems.Add(dr);
+    //            }
+
+    //            //Guid guid = new Guid(Convert.ToString(item["FarmerID"]));
+    //            dt.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == item.FarmerId && a.Field<int>("FarmID") == item.FarmId && a.Field<int>("PlantationId") == item.PlantationId)
+    //                .ToList().ForEach(m =>
+    //                {
+    //                    m["AvailableQuantity"] = item.Quantity;
+    //                    m["Collect"] = true;
+    //                });
+    //        }
+
+    //        if (listSelectedItems.Count > 0)
+    //        {
+    //            DataTable selectedDT = listSelectedItems.AsEnumerable().CopyToDataTable();
+
+    //            if (selectedDT.Rows.Count > 0)
+    //            {
+    //                gvSelectedCollectionDetails.DataSource = selectedDT;
+    //                gvSelectedCollectionDetails.DataBind();
+    //            }
+    //            else
+    //            {
+    //                BindEmptyCollectionDataTable();
+    //            }
+    //        }
+    //        else
+    //        {
+    //            Session["SelectedCollectionItems"] = null;
+    //            BindEmptyCollectionDataTable();
+    //        }
+
+
+    //        //foreach (DataRow item in listSelectedItems)
+    //        //{
+    //        //    Guid guid = new Guid(Convert.ToString(item["FarmerID"]));
+    //        //    DataRow dr = dt.AsEnumerable().Where(a => a.Field<bool>("Collect") == true && a.Field<Guid>("FarmerID") == guid && a.Field<int>("FarmID") == Convert.ToInt32(item["FarmID"]) && a.Field<int>("PlantationId") == Convert.ToInt32(item["PlantationId"])).FirstOrDefault();
+    //        //    if (dr == null)
+    //        //    {
+    //        //        listSelectedItems.Remove(item);
+    //        //    }
+    //        //}
+    //        //if (listSelectedItems.Count > 0)
+    //        //{
+    //        //    DataTable selectedDT = listSelectedItems.AsEnumerable().CopyToDataTable();
+    //        //    Session["SelectedCollectionItems"] = selectedDT;
+    //        //    if (selectedDT.Rows.Count > 0)
+    //        //    {
+    //        //        gvSelectedCollectionDetails.DataSource = selectedDT;
+    //        //        gvSelectedCollectionDetails.DataBind();
+    //        //    }
+    //        //    else
+    //        //    {
+    //        //        BindEmptyCollectionDataTable();
+    //        //    }
+    //        //}
+    //        //else
+    //        //{
+    //        //    Session["SelectedCollectionItems"] = null;
+    //        //    BindEmptyCollectionDataTable();
+    //        //}
+
+    //        //List<MudarItemModel> listItems = new List<MudarItemModel>();
+    //        //foreach (DataRow item in listSelectedItems)
+    //        //{
+    //        //    MudarItemModel mudarItem = new MudarItemModel();
+    //        //    mudarItem.FarmerId = new Guid(Convert.ToString(item["FarmerID"]));
+    //        //    mudarItem.FarmId = Convert.ToInt32(item["FarmID"]);
+    //        //    mudarItem.PlantationId = Convert.ToInt32(item["PlantationId"]);
+    //        //    mudarItem.Quantity = Convert.ToDecimal(item["AvailableQuantity"]);
+    //        //    listItems.Add(mudarItem);
+    //        //}
+
+    //        //dt.AsEnumerable().Where(m => m.Field<bool>("Collect") == true)
+    //        //.ToList().ForEach(m =>
+    //        //{
+    //        //    m["AvailableQuantity"] = 0;
+    //        //    m["Collect"] = false;
+    //        //});
+
+    //        //foreach (MudarItemModel item in listItems)
+    //        //{
+    //        //    //Guid guid = new Guid(Convert.ToString(item["FarmerID"]));
+    //        //    dt.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == item.FarmerId && a.Field<int>("FarmID") == item.FarmId && a.Field<int>("PlantationId") == item.PlantationId)
+    //        //        .ToList().ForEach(m =>
+    //        //        {
+    //        //            m["AvailableQuantity"] = item.Quantity;
+    //        //            m["Collect"] = true;
+    //        //        });
+    //        //}
+    //        //lblAlrcollQty.Text = (Convert.ToDecimal(lblOrderQuantity.Text) - (Convert.ToDecimal(lblpresentqty.Text) + qtyTotal)).ToString();
+    //        //lblpresentqty.Text = (Convert.ToDecimal(lblpresentqty.Text) + qtyTotal).ToString();
+    //        Session["FarmerCollectDetails"] = dt;
+    //        gvCollecingDetails.DataSource = dt;
+    //        gvCollecingDetails.DataBind();
+    //        trSearchButtons.Visible = true;
+    //        btnFarmerSearchCancel.Visible = false;
+    //        btnFarmercollt.Visible = true;
+    //        txtFarmerSearch.Text = string.Empty;
+    //        // lblpresentqty.Text = qtyTotal.ToString();
+    //    }
+    //}
+
+
+    protected void btnFarmerCollectSearchapply_Click(object sender, EventArgs e)
+    {
+        List<DataRow> listSelectedItems = new List<DataRow>();
+        DataTable dt = (DataTable)Session["FarmerCollectDetails"];
+        dt.AsEnumerable().Where(m => m.Field<bool>("Collect") == true)
+            .ToList().ForEach(m =>
+            {
+                m["AvailableQuantity"] = 0;
+                m["Collect"] = false;
+            });
+
+
+        decimal collectedQty = Convert.ToDecimal(lblpresentqty.Text);
+
+        DataTable dtSelected = Session["SelectedCollectionItems"] as DataTable;
+        decimal qtyTotal = 0;
+        if (gvCollecingDetails.Rows.Count > 0)
+        {
+            foreach (GridViewRow item in gvCollecingDetails.Rows)
+            {
+                if (((CheckBox)item.Cells[7].FindControl("cbCollecting")).Checked)
+                {
+                    Guid pfarmerId = new Guid(gvCollecingDetails.DataKeys[item.RowIndex].Values["FarmerID"].ToString());
+                    int pfarmID = Convert.ToInt32(gvCollecingDetails.DataKeys[item.RowIndex].Values["FarmID"]);
+                    int pplantationId = Convert.ToInt32(gvCollecingDetails.DataKeys[item.RowIndex].Values["PlantationId"]);
+
+                    dt.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == pfarmerId && a.Field<int>("FarmID") == pfarmID && a.Field<int>("PlantationId") == pplantationId)
+            .ToList().ForEach(m =>
+            {
+                m["AvailableQuantity"] = Convert.ToDecimal(((TextBox)item.Cells[6].FindControl("txtCollectQty")).Text);
+                m["Collect"] = ((CheckBox)item.Cells[7].FindControl("cbCollecting")).Checked;
+                qtyTotal = qtyTotal + Convert.ToDecimal(((TextBox)item.Cells[6].FindControl("txtCollectQty")).Text);
+
+
+
+            });
+                    //listSelectedItems.AddRange(dt.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == pfarmerId && a.Field<int>("FarmID") == pfarmID && a.Field<int>("PlantationId") == pplantationId)
+                    //            .ToList());
+
+                }
+            }
+            if (Convert.ToDecimal(lblOrderQuantity.Text) < (qtyTotal + collectedQty))
+            {
+                ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('Collected Quantity should not exceed Order Quantity !!!');</script>");
+                return;
+            }
+
+            if (Session["SearchFarmerCollectDetails"] != null)
+            {
+                List<MudarItemModel> listPrevSelectedItems = Session["SearchFarmerCollectDetails"] as List<MudarItemModel>;
+                foreach (MudarItemModel item in listPrevSelectedItems)
+                {
+                    Guid pfarmerId = item.FarmerId;
+                    int pfarmID = item.FarmId;
+                    int pplantationId = item.PlantationId;
+
+                    dt.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == pfarmerId && a.Field<int>("FarmID") == pfarmID && a.Field<int>("PlantationId") == pplantationId)
+            .ToList().ForEach(m =>
+            {
+                m["AvailableQuantity"] = item.Quantity;
+                m["Collect"] = true;
+            });
+
+                }
+                Session["SearchFarmerCollectDetails"] = null;
+            }
+
+            List<DataRow> listTotalSelections = dt.AsEnumerable().Where(m => m.Field<bool>("Collect") == true).ToList();
+            foreach (DataRow item in listTotalSelections)
+            {
+                if (dtSelected != null)
+                {
+                    DataRow dr = dtSelected.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == new Guid(item["FarmerID"].ToString()) && a.Field<int>("FarmID") == Convert.ToInt32(item["FarmID"]) && a.Field<int>("PlantationId") == Convert.ToInt32(item["PlantationId"])).FirstOrDefault();
+                    if (dr != null)
+                    {
+                        dr["AvailableQuantity"] = Convert.ToDecimal(item["AvailableQuantity"]);
+                        listSelectedItems.Add(dr);
+                    }
+                    else
+                    {
+                        listSelectedItems.Add(item);
+                    }
+                }
+                else
+                {
+                    listSelectedItems.Add(item);
+                }
+            }
+
+            List<DataRow> tempList = new List<DataRow>();
+            tempList.AddRange(listSelectedItems);
+
+            foreach (DataRow item in tempList)
+            {
+                Guid guid = new Guid(Convert.ToString(item["FarmerID"]));
+                DataRow dr = dt.AsEnumerable().Where(a => a.Field<bool>("Collect") == true && a.Field<Guid>("FarmerID") == guid && a.Field<int>("FarmID") == Convert.ToInt32(item["FarmID"]) && a.Field<int>("PlantationId") == Convert.ToInt32(item["PlantationId"])).FirstOrDefault();
+                if (dr == null)
+                {
+                    listSelectedItems.Remove(item);
+                }
+            }
+            if (listSelectedItems.Count > 0)
+            {
+                DataTable selectedDT = listSelectedItems.AsEnumerable().CopyToDataTable();
+                Session["SelectedCollectionItems"] = selectedDT;
+                if (selectedDT.Rows.Count > 0)
+                {
+                    gvSelectedCollectionDetails.DataSource = selectedDT;
+                    gvSelectedCollectionDetails.DataBind();
+                }
+                else
+                {
+                    BindEmptyCollectionDataTable();
+                }
+            }
+            else
+            {
+                Session["SelectedCollectionItems"] = null;
+                BindEmptyCollectionDataTable();
+            }
+
+            List<MudarItemModel> listItems = new List<MudarItemModel>();
+            foreach (DataRow item in listSelectedItems)
+            {
+                MudarItemModel mudarItem = new MudarItemModel();
+                mudarItem.FarmerId = new Guid(Convert.ToString(item["FarmerID"]));
+                mudarItem.FarmId = Convert.ToInt32(item["FarmID"]);
+                mudarItem.PlantationId = Convert.ToInt32(item["PlantationId"]);
+                mudarItem.Quantity = Convert.ToDecimal(item["AvailableQuantity"]);
+                listItems.Add(mudarItem);
+            }
+
+            dt.AsEnumerable().Where(m => m.Field<bool>("Collect") == true)
+            .ToList().ForEach(m =>
+            {
+                m["AvailableQuantity"] = 0;
+                m["Collect"] = false;
+            });
+
+            foreach (MudarItemModel item in listItems)
+            {
+                //Guid guid = new Guid(Convert.ToString(item["FarmerID"]));
+                dt.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == item.FarmerId && a.Field<int>("FarmID") == item.FarmId && a.Field<int>("PlantationId") == item.PlantationId)
+                    .ToList().ForEach(m =>
+                    {
+                        m["AvailableQuantity"] = item.Quantity;
+                        m["Collect"] = true;
+                    });
+            }
+            //lblAlrcollQty.Text = (Convert.ToDecimal(lblOrderQuantity.Text) - (Convert.ToDecimal(lblpresentqty.Text) + qtyTotal)).ToString();
+            //lblpresentqty.Text = (Convert.ToDecimal(lblpresentqty.Text) + qtyTotal).ToString();
+            //Session["FarmerCollectDetails"] = dt;
+            gvCollecingDetails.DataSource = dt;
+            gvCollecingDetails.DataBind();
+            trSearchButtons.Visible = true;
+            btnFarmerSearchCancel.Visible = false;
+            btnFarmercollt.Visible = true;
+            btnDisablecollectSave.Visible = false;
+            txtFarmerSearch.Text = string.Empty;
+            UpdateSelectedQuantityLabels();
+            //if (btnFarmercollt.Visible == false)
+            //{
+            //    btnFarmercollt.Visible = true;
+            //    btnDisablecollectSave.Visible = false;
+            //}
+            //else
+            //{
+            //    btnFarmercollt.Visible = false;
+            //    btnDisablecollectSave.Visible = true;
+            //}
+            // lblpresentqty.Text = qtyTotal.ToString();
+        }
+    }
+    protected void gvSelectedCollectionDetails_Sorting(object sender, GridViewSortEventArgs e)
+    {
+        SortExpression_p = e.SortExpression.ToString();
+        SortingSelectFarmerCode(SortExpression_p);
+    }
+    protected void gvSelectedCollectionDetails_RowEditing(object sender, GridViewEditEventArgs e)
+    {
+        gvSelectedCollectionDetails.EditIndex = e.NewEditIndex;
+        BindSelectedCollectionDetails();
+    }
+    protected void gvSelectedCollectionDetails_RowDeleting(object sender, GridViewDeleteEventArgs e)
+    {
+        int PPlantationId = Convert.ToInt32(gvSelectedCollectionDetails.DataKeys[e.RowIndex].Values["PlantationId"]);
+        Guid PFarmerID = new Guid(gvSelectedCollectionDetails.DataKeys[e.RowIndex].Values["FarmerID"].ToString());
+        int PFarmID = Convert.ToInt32(gvSelectedCollectionDetails.DataKeys[e.RowIndex].Values["FarmID"]);
+
+        DataTable dt = (DataTable)Session["SelectedCollectionItems"];
+        DataRow dr = dt.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == PFarmerID && a.Field<int>("FarmID") == PFarmID && a.Field<int>("PlantationId") == PPlantationId).FirstOrDefault();
+        if (dr != null)
+        {
+            dt.Rows.Remove(dr);
+            Session["SelectedCollectionItems"] = dt;
+
+            DataTable dtFarmerCollection = Session["FarmerCollectDetails"] as DataTable;
+            dtFarmerCollection.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == PFarmerID && a.Field<int>("FarmID") == PFarmID && a.Field<int>("PlantationId") == PPlantationId)
+                        .ToList().ForEach(m =>
+                        {
+                            //TextBox txt = (TextBox)gvSelectedCollectionDetails.Rows[e.RowIndex].FindControl("txtCollectQty");
+                            m["AvailableQuantity"] = 0;
+                            m["Collect"] = false;
+                        });
+            //Session["FarmerCollectDetails"] = dtFarmerCollection;
+            gvCollecingDetails.DataSource = dtFarmerCollection;
+            gvCollecingDetails.DataBind();
+            UpdateSelectedQuantityLabels();
+            gvSelectedCollectionDetails.DataSource = dt;
+            gvSelectedCollectionDetails.DataBind();
+            btnFarmercollt.Visible = true;
+            btnDisablecollectSave.Visible = false;
+            //ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('Selected Item removed successfully !!!');</script>");
+        }
+        else
+        {
+            ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('Unable to remove selected item !!!');</script>");
+        }
+    }
+
+    protected void gvSelectedCollectionDetails_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
+    {
+        gvSelectedCollectionDetails.EditIndex = -1;
+        BindSelectedCollectionDetails();
+    }
+    protected void gvSelectedCollectionDetails_RowUpdating(object sender, GridViewUpdateEventArgs e)
+    {
+        TextBox txt = (TextBox)gvSelectedCollectionDetails.Rows[e.RowIndex].FindControl("txtCollectQty");
+        if (string.IsNullOrEmpty(txt.Text))
+        {
+            ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('!!! Please enter quantity !!!');</script>");
+            return;
+        }
+
+
+        Regex regex = new Regex(@"^\d+[\.,]?\d{0,2}$");
+        Match match = regex.Match(txt.Text);
+        if (!match.Success)
+        {
+            ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('!!! Please enter valid quantity value !!!');</script>");
+            return;
+        }
+
+        decimal collectedQuantity = Convert.ToDecimal(txt.Text);
+        //if (decimal.TryParse(txt.Text, out collectedQuantity))
+        //{
+        //    ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('!!! Please enter valid quantity value !!!');</script>");
+        //    return;
+        //}
+
+        if (collectedQuantity <= 0)
+        {
+            ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('!!! Quantity must be atleast one KG !!! ');</script>");
+            return;
+        }
+
+
+        decimal availableQyantity = Convert.ToDecimal(gvSelectedCollectionDetails.Rows[e.RowIndex].Cells[2].Text.Trim());
+
+        if (availableQyantity < collectedQuantity)
+        {
+            ClientScript.RegisterStartupScript(typeof(Page), "alert", "<script language=JavaScript>alert('!!! Please check the available quantity !!! ');</script>");
+            return;
+        }
+
+
+
+        int PPlantationId = Convert.ToInt32(gvSelectedCollectionDetails.DataKeys[e.RowIndex].Values["PlantationId"]);
+        Guid PFarmerID = new Guid(gvSelectedCollectionDetails.DataKeys[e.RowIndex].Values["FarmerID"].ToString());
+        int PFarmID = Convert.ToInt32(gvSelectedCollectionDetails.DataKeys[e.RowIndex].Values["FarmID"]);
+
+        DataTable dt = (DataTable)Session["SelectedCollectionItems"];
+        dt.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == PFarmerID && a.Field<int>("FarmID") == PFarmID && a.Field<int>("PlantationId") == PPlantationId)
+                    .ToList().ForEach(m =>
+                    {
+                        //TextBox txt = (TextBox)gvSelectedCollectionDetails.Rows[e.RowIndex].FindControl("txtCollectQty");
+                        m["AvailableQuantity"] = Convert.ToDecimal(txt.Text);
+                    });
+
+
+        decimal total = dt.AsEnumerable().Sum(m => m.Field<decimal>("AvailableQuantity"));
+        Session["SelectedCollectionItems"] = dt;
+
+        DataTable dtFarmerCollection = Session["FarmerCollectDetails"] as DataTable;
+        dtFarmerCollection.AsEnumerable().Where(a => a.Field<Guid>("FarmerID") == PFarmerID && a.Field<int>("FarmID") == PFarmID && a.Field<int>("PlantationId") == PPlantationId)
+                    .ToList().ForEach(m =>
+                    {
+                        //TextBox txt = (TextBox)gvSelectedCollectionDetails.Rows[e.RowIndex].FindControl("txtCollectQty");
+                        m["AvailableQuantity"] = Convert.ToDecimal(txt.Text);
+                        m["Collect"] = true;
+                    });
+        //Session["FarmerCollectDetails"] = dtFarmerCollection;
+        gvCollecingDetails.DataSource = dtFarmerCollection;
+        gvCollecingDetails.DataBind();
+
+        this.UpdateSelectedQuantityLabels();
+        gvSelectedCollectionDetails.EditIndex = -1;
+        gvSelectedCollectionDetails.DataSource = dt;
+        gvSelectedCollectionDetails.DataBind();
+        
+            btnFarmercollt.Visible = true;
+            btnDisablecollectSave.Visible = false;
+    }
+
+    private void UpdateSelectedQuantityLabels()
+    {
+        decimal total = 0;
+        DataTable dt = (DataTable)Session["SelectedCollectionItems"];
+        if (dt != null)
+        {
+            total = dt.AsEnumerable().Sum(m => m.Field<decimal>("AvailableQuantity"));
+
+        }
+
+        if (gvPreorderCollection.Rows.Count > 0)
+        {
+            foreach (GridViewRow item in gvPreorderCollection.Rows)
+            {
+                if (((CheckBox)item.Cells[5].FindControl("cbCollectingPreorder")).Checked)
+                {
+                    total = total + Convert.ToDecimal(((TextBox)item.Cells[4].FindControl("txtCollectQty")).Text);
+
+                }
+            }
+        }
+
+        lblpresentqty.Text = total.ToString();
+        lblAlrcollQty.Text = (Convert.ToDecimal(lblOrderQuantity.Text) - total).ToString();
+    }
+
+    protected void gvSelectedCollectionDetails_RowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        if (e.Row.RowType == DataControlRowType.DataRow)
+        {
+            Button lnkbtnresult = (Button)e.Row.FindControl("ButtonDelete");
+            if (lnkbtnresult != null)
+            {
+                lnkbtnresult.Attributes.Add("onclick", "javascript:return confirm('Are you sure that you want remove this item?');");
+            }
+        }
+    }
+
+    private void BindSelectedCollectionDetails()
+    {
+        DataTable dt = (DataTable)Session["SelectedCollectionItems"];
+        gvSelectedCollectionDetails.DataSource = dt;
+        gvSelectedCollectionDetails.DataBind();
+    }
+    protected void btnRedirectPreorder_Click(object sender, EventArgs e)
+    {
+        int productId = Convert.ToInt32(ddlSelectProduct.SelectedValue);
+        List<string> listSelectedItems = chkICSList.Items.Cast<ListItem>()
+   .Where(li => li.Selected)
+   .Select(li => li.Value).ToList();
+        string selItems = string.Join(";", listSelectedItems.ToArray());
+        Response.Redirect("~/Mudar/FarmerPreOrder.aspx?nav=true&pid=" + productId + "&sel=" + selItems);
+    }
+}

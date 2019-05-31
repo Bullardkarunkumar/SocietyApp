@@ -1,0 +1,7 @@
+﻿Hi <b>@Company@</b><br/>
+Your <b>Edit request</b> Updated Successfully<br/>
+@ProductList@ 
+<br/>
+Thanks<br/> 
+<b>Mudar India Exports</b>
+</p>

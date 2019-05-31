@@ -1,0 +1,8 @@
+﻿
+Hi <b>Mudar India Exports</b><br/>
+I request you to update my NEW Product List as given below.<br/>
+@ProductList@ 
+<br/>
+Thanks<br/> 
+<b>@Company@</b>
+</p>

@@ -1,0 +1,1331 @@
+<%@ Page Title="Mudar Order Process" Language="C#" MasterPageFile="~/MudarMaster.master"
+    AutoEventWireup="true" CodeFile="UpdateOrder.aspx.cs" Inherits="Admin_UpdateOrder"
+    EnableEventValidation="false" %>
+
+
+
+<asp:Content ID="Content1" ContentPlaceHolderID="body_cph" runat="Server">
+    <style type="text/css">
+        .gvheader th {
+            color: blue;
+            text-align: center;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        #tdGrid div {
+        text-align:center;
+        display:inline-block;
+        }
+    </style>
+    <script type="text/javascript">
+
+          
+
+            function validateGridQuantity() {
+            
+                var chktest1 = 0;
+                var X = 0;
+                var str = '';
+                var Grid_Table = document.getElementById('<%= gvCollecingDetails.ClientID %>');
+
+
+
+                for (var row = 1; row < Grid_Table.rows.length; row++) {
+                    var col2 = Grid_Table.rows[row].cells[7];
+                    for (var j = 0; j < col2.childNodes.length; j++) {
+                        if (col2.childNodes[j].type == "checkbox") {
+                            if (col2.childNodes[j].checked) {
+                                //document.getElementById('<%=btnFarmercollt.ClientID%>').disabled = false;
+                                var col1 = Grid_Table.rows[row].cells[6];
+                                for (var k = 0; k < col1.childNodes.length; k++) {
+                                    if (col1.childNodes[k].type == "text") {
+                                        if (!isNaN(col1.childNodes[k].value) && col1.childNodes[k].value != "") {
+                                            var curr = parseFloat(col1.childNodes[k].value);
+                                            var availQty = parseFloat(Grid_Table.rows[row].cells[5].innerText);
+                                            if (curr == 0) {
+                                                alert('!!! Quantity must be atleast one KG !!! ');
+                                                col2.childNodes[j].checked = false;
+                                                col1.childNodes[k].value = '0';
+                                            }
+                                            else if (/^\d{1,5}(\.\d{1,2})?$/.test(col1.childNodes[k].value) == false) {
+                                                alert('!!! Please Enter valid Quantity !!! ');
+                                                col2.childNodes[j].checked = false;
+                                                col1.childNodes[k].value = '0';
+                                            }
+                                            else if (curr > availQty) {
+                                                alert('Plz Check the Available Quantity');
+                                                col2.childNodes[j].checked = false;
+                                                col1.childNodes[k].value = '0';
+                                            }
+                                            else {
+                                                X += Number(parseFloat(col1.childNodes[k].value).toFixed(2));
+                                            }
+                                        }
+                                        else {
+                                            col1.childNodes[k].value = '0';
+                                            alert('!!! Please Enter the Quantity !!!');
+                                            col2.childNodes[j].checked = false;
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+
+            function calculateQuantity() {
+                document.getElementById('<%= btnFarmercollt.ClientID %>').style.display = 'block';
+                document.getElementById('<%= btnDisablecollectSave.ClientID %>').style.display = 'none';
+                var chktest1 = 0;
+                var X = 0;
+                var str = '';
+                var Grid_Table = document.getElementById('<%= gvSelectedCollectionDetails.ClientID %>');
+
+                var Grid_Table1 = document.getElementById('<%= gvPreorderCollection.ClientID %>');
+                for (var row = 1; row < Grid_Table1.rows.length; row++) {
+                    var col2 = Grid_Table1.rows[row].cells[5];
+                    for (var j = 0; j < col2.childNodes.length; j++) {
+                        if (col2.childNodes[j].type == "checkbox") {
+                            if (col2.childNodes[j].checked) {
+                                var col1 = Grid_Table1.rows[row].cells[4];
+                                for (var k = 0; k < col1.childNodes.length; k++) {
+                                    if (col1.childNodes[k].type == "text") {
+                                        X = X + parseFloat(col1.childNodes[k].value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for (var row = 1; row < Grid_Table.rows.length; row++) {
+                    var col2 = Grid_Table.rows[row].cells[7];
+                    for (var j = 0; j < col2.childNodes.length; j++) {
+                        if (col2.childNodes[j].type == "checkbox") {
+                            if (col2.childNodes[j].checked) {
+                                document.getElementById('<%=btnFarmercollt.ClientID%>').disabled = false;
+                                var col1 = Grid_Table.rows[row].cells[6];
+                                for (var k = 0; k < col1.childNodes.length; k++) {
+                                    if (col1.childNodes[k].type == "text") {
+                                        if (!isNaN(col1.childNodes[k].value) && col1.childNodes[k].value != "") {
+                                            var curr = parseFloat(col1.childNodes[k].value);
+                                            var availQty = parseFloat(Grid_Table.rows[row].cells[5].innerText);
+                                            if (curr == 0) {
+                                                alert('!!! Quantity must be atleast one KG !!! ');
+                                                col2.childNodes[j].checked = false;
+                                                col1.childNodes[k].value = '0';
+                                            }
+                                            else if (/^\d{1,5}(\.\d{1,2})?$/.test(col1.childNodes[k].value) == false) {
+                                                alert('!!! Please Enter valid Quantity !!! ');
+                                                col2.childNodes[j].checked = false;
+                                                col1.childNodes[k].value = '0';
+                                            }
+                                            else if (curr > availQty) {
+                                                alert('Plz Check the Available Quantity');
+                                                col2.childNodes[j].checked = false;
+                                                col1.childNodes[k].value = '0';
+                                            }
+                                            else {
+                                                X += Number(parseFloat(col1.childNodes[k].value).toFixed(2));
+                                            }
+                                        }
+                                        else {
+                                            col1.childNodes[k].value = '0';
+                                            alert('!!! Please Enter the Quantity !!!');
+                                            col2.childNodes[j].checked = false;
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                }
+                document.getElementById('<%=lblpresentqty.ClientID%>').innerText = X;
+                var Y = parseFloat(document.getElementById('<%=lblOrderQuantity.ClientID%>').innerText);
+                document.getElementById('<%=lblAlrcollQty.ClientID%>').innerText = (Y - X);
+                return false;
+            }
+        function calculatePreorderQuantity() {
+            
+                var Y = parseFloat(document.getElementById('<%=lblOrderQuantity.ClientID%>').innerText);
+                var chktest1 = 0;
+                var X = 0;
+                var str = '';
+                var Grid_Table = document.getElementById('<%= gvPreorderCollection.ClientID %>');
+
+                var Grid_Table1 = document.getElementById('<%= gvCollecingDetails.ClientID %>');
+                for (var row = 1; row < Grid_Table1.rows.length; row++) {
+                    var col2 = Grid_Table1.rows[row].cells[7];
+                    for (var j = 0; j < col2.childNodes.length; j++) {
+                        if (col2.childNodes[j].type == "checkbox") {
+                            if (col2.childNodes[j].checked) {
+                                var col1 = Grid_Table1.rows[row].cells[6];
+                                for (var k = 0; k < col1.childNodes.length; k++) {
+                                    if (col1.childNodes[k].type == "text") {
+                                        X = X + parseFloat(col1.childNodes[k].value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for (var row = 1; row < Grid_Table.rows.length; row++) {
+                    var col2 = Grid_Table.rows[row].cells[5];
+                    for (var j = 0; j < col2.childNodes.length; j++) {
+                        if (col2.childNodes[j].type == "checkbox") {
+                            if (col2.childNodes[j].checked) {
+                                document.getElementById('<%=btnPrecollt.ClientID%>').disabled = false;
+                                var col1 = Grid_Table.rows[row].cells[4];
+                                for (var k = 0; k < col1.childNodes.length; k++) {
+                                    if (col1.childNodes[k].type == "text") {
+                                        if (!isNaN(col1.childNodes[k].value) && col1.childNodes[k].value != "") {
+                                            var curr = parseFloat(col1.childNodes[k].value);
+                                            var availQty = parseFloat(Grid_Table.rows[row].cells[3].innerText);
+                                            if (curr < 1) {
+                                                alert('!!! Quantity must be atleast one KG !!! ');
+                                                col2.childNodes[j].checked = false;
+                                            }
+                                            else if (/^\d{1,5}(\.\d{1,2})?$/.test(col1.childNodes[k].value) == false) {
+                                                alert('!!! Please Enter valid Quantity !!! ');
+                                                col2.childNodes[j].checked = false;
+                                            }
+                                            else if (curr > availQty) {
+                                                alert('Plz Check the Available Quantity');
+                                                col2.childNodes[j].checked = false;
+                                            }
+                                            else {                                                
+                                                X += Number(parseFloat(col1.childNodes[k].value).toFixed(2));
+                                                if (X > Y) {
+                                                    alert('Collected Quantity should not exceed Order Quantity');
+                                                    col2.childNodes[j].checked = false;
+                                                    col1.childNodes[k].value = '0';
+                                                    return;
+                                                }
+                                                document.getElementById('<%=btnPrecollt.ClientID%>').style.display = 'block';
+                                                document.getElementById('<%=btnDisablepreorderSave.ClientID%>').style.display = 'none';
+                                            }
+                                        }
+                                        else {
+                                            col1.childNodes[k].value = '0';
+                                            alert('!!! Please Enter the Quantity !!!');
+                                        }
+                                    }
+                                }
+                            }
+                            //else {
+                            //    var colText = Grid_Table.rows[row].cells[4];
+                            //    for (var k = 0; k < colText.childNodes.length; k++) {
+                            //        if (colText.childNodes[k].type == "text") {
+                            //            colText.childNodes[k].value = '0';
+                            //        }
+                            //    }
+                            //}
+                        }
+                    }
+                }
+                document.getElementById('<%=lblpresentqty.ClientID%>').innerText = X;
+                
+                document.getElementById('<%=lblAlrcollQty.ClientID%>').innerText = (Y - X);
+                return false;
+            }
+
+            function calculateBlendingQuantity() {
+                document.getElementById('<%= lblBlendQty.ClientID %>').style.display = 'block';
+                var chktest1 = 0;
+                var X = 0;
+                var str = '';
+                var Grid_Table = document.getElementById('<%= gvBlending.ClientID %>');
+
+                for (var row = 1; row < Grid_Table.rows.length; row++) {
+                    var col2 = Grid_Table.rows[row].cells[4];
+                    for (var j = 0; j < col2.childNodes.length; j++) {
+                        if (col2.childNodes[j].type == 'checkbox') {
+                            if (col2.childNodes[j].checked) {
+                                X = X + Number(parseFloat(Grid_Table.rows[row].cells[3].innerText).toFixed(2));;
+                            }
+                        }
+                    }
+                }
+
+                Grid_Table = document.getElementById('<%= gvBlendPreorder.ClientID %>');
+
+                for (var row = 1; row < Grid_Table.rows.length; row++) {
+                    var col2 = Grid_Table.rows[row].cells[2];
+                    for (var j = 0; j < col2.childNodes.length; j++) {
+                        if (col2.childNodes[j].type == "checkbox") {
+                            if (col2.childNodes[j].checked) {
+                                X = X + Number(parseFloat(Grid_Table.rows[row].cells[1].innerText).toFixed(2));;
+                            }
+                        }
+                    }
+                }
+                document.getElementById('<%=lblBlendQty.ClientID%>').innerText = X;
+                document.getElementById('<%=lblAlrBlendQty.ClientID%>').innerText = X;
+                return false;
+            }
+
+            function calculateBlendingPOQuantity() {
+                document.getElementById('<%= lblBlendQty.ClientID %>').style.display = 'block';
+                var chktest1 = 0;
+                var X = 0;
+                var str = '';
+                var Grid_Table = document.getElementById('<%= gvBlendPreorder.ClientID %>');
+
+                for (var row = 1; row < Grid_Table.rows.length; row++) {
+                    var col2 = Grid_Table.rows[row].cells[2];
+                    for (var j = 0; j < col2.childNodes.length; j++) {
+                        if (col2.childNodes[j].type == "checkbox") {
+                            if (col2.childNodes[j].checked) {
+                                X = X + Number(parseFloat(Grid_Table.rows[row].cells[1].innerText).toFixed(2));;
+                            }
+                        }
+                    }
+                }
+                document.getElementById('<%=lblBlendQty.ClientID%>').innerText = X;
+                if (X + parseInt(document.getElementById('<%=lblAlrBlendQty.ClientID%>').innerText) == parseInt(document.getElementById('<%=lblAlrBlendQty.ClientID%>').innerText))
+                    document.getElementById('<%=lblBlendQty.ClientID%>').innerText = X + parseInt(document.getElementById('<%=lblAlrBlendQty.ClientID%>').innerText);
+
+                return false;
+            }
+
+        
+    </script>
+    <div id="content_area_Home" style="height: auto">
+        <div id="divOrderDetails" runat="server">
+            <div id="header_Text">
+                Order Details
+            </div>
+            <div>
+                &nbsp;
+            </div>
+            <table align="center">
+                <tr>
+                    <td width="250px" align="right">Order ID :
+                    </td>
+                    <td width="250px" align="left">
+                        <asp:Label ID="lblOrderId" runat="server" Text="" ForeColor="#FF6600" />
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<asp:HyperLink ID="hfPdf" runat="server" Text="Open"
+                            Target="_blank" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<asp:Label ID="lblLotsample" runat="server"
+                                Visible="false" ForeColor="#FF6600" />
+                    </td>
+                </tr>
+                <tr>
+                    <td width="250px" align="right">Order Type :
+                    </td>
+                    <td width="250px" align="left">
+                        <asp:Label ID="lblOtype" runat="server" ForeColor="#FF6600" />
+                    </td>
+                </tr>
+                <tr>
+                    <td width="250px" align="right">Purchase Order ID :
+                    </td>
+                    <td width="250px" align="left">
+                        <asp:Label ID="lblPOID" runat="server" Text="" ForeColor="#FF6600" />
+                    </td>
+                </tr>
+                <tr>
+                    <td width="250px" align="right">Buyer :
+                    </td>
+                    <td align="left">
+                        <asp:HyperLink ID="hlBuyer" runat="server" NavigateUrl="~/Buyer/BuyerDoc.aspx" Text="" />
+                    </td>
+                </tr>
+                <tr id="trProduct" runat="server" visible="false">
+                    <td width="250px" align="right">Product List :
+                    </td>
+                    <td align="left">
+                        <asp:LinkButton ID="lbProductList" runat="server" Text="Click Here" />
+                    </td>
+                </tr>
+                <tr>
+                    <td width="250px" align="right">Status :
+                    </td>
+                    <td width="250px" align="left">
+                        <asp:DropDownList ID="ddlOrderStatus" runat="server">
+                            <asp:ListItem Text="NEW" Value="NEW" />
+                            <asp:ListItem Text="INPROCESS" Value="INPROCESS" />
+                            <asp:ListItem Text="SHIPPING" Value="SHIPPING" />
+                            <asp:ListItem Text="SALE" Value="SALE" />
+                            <asp:ListItem Text="CUSTOMS UNDER" Value="CUSTOMS UNDER" />
+                            <asp:ListItem Text="ETA" Value="ETA" />
+                            <asp:ListItem Text="CLOSE" Value="CLOSE" />
+                        </asp:DropDownList>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">&nbsp;Place Order :
+                    </td>
+                    <td>
+                        <asp:Button ID="btnPlaceBrnchOrder" runat="server" Text="Place Order" CommandName="BranchOrder"
+                            OnClick="btnPlaceBrnchOrder_Click" CssClass="fb8" />
+                        <asp:Button ID="btnDisable" runat="server" Text="Place Order" CssClass="fb8_disable"
+                            Visible="false" ForeColor="Gray" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" align="center">Comments
+                        <br />
+                        <%--<asp:BoundField DataField="AreaCode" HeaderText="PlotCode" HeaderStyle-HorizontalAlign="Center"
+                                                    SortExpression="AreaCode"></asp:BoundField>--%>
+                        <asp:TextBox ID="txtComments" runat="server" Height="140px" Width="340px" TextMode="MultiLine"
+                            ForeColor="OrangeRed" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" align="center">
+                        <asp:Button ID="btnSubmit" runat="server" Text="Submit" OnClick="btnSubmit_Click"
+                            CssClass="fb8" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="BranchOrderDetails" runat="server">
+            <div id="header_Text">
+                Branch Order Details
+            </div>
+            <table align="center">
+                <tr>
+                    <td width="250px" align="right">Branch Order ID :
+                    </td>
+                    <td width="250px" align="left">
+                        <asp:Label ID="lblBranchOrderID" runat="server" Text="" ForeColor="#FF6600" />
+                        &nbsp;&nbsp;&nbsp;
+                        <asp:HyperLink ID="hlBranchPDF" runat="server" Text="Open" Target="_blank" />
+                    </td>
+                </tr>
+                <tr>
+                    <td width="250px" align="right">Branch OrderType :
+                    </td>
+                    <td width="250px" align="left">
+                        <asp:Label ID="lblBOtype" runat="server" Text="" ForeColor="#FF6600" />
+                    </td>
+                </tr>
+                <tr>
+                    <td width="250px" align="right">BranchPurchase Order ID :
+                    </td>
+                    <td width="250px" align="left">
+                        <asp:Label ID="lblBPOID" runat="server" Text="" ForeColor="#FF6600" />
+                    </td>
+                </tr>
+                <tr id="trBProduct" runat="server" visible="false">
+                    <td width="250px" align="right">Product List :
+                    </td>
+                    <td>
+                        <asp:LinkButton ID="lbtnBranchProductList" runat="server" Text="Click Here" />
+                    </td>
+                </tr>
+                <tr>
+                    <td width="250px" align="right">Status :
+                    </td>
+                    <td width="250px" align="left">
+                        <asp:DropDownList ID="ddlBStatus" runat="server" OnSelectedIndexChanged="ddlBStatus_SelectedIndexChanged">
+                            <asp:ListItem Text="NEW" Value="NEW" />
+                            <asp:ListItem Text="COLLECTING" Value="COLLECTING" />
+                            <asp:ListItem Text="BLENDING" Value="BLENDING" />
+                            <asp:ListItem Text="TESTING" Value="TESTING" />
+                            <asp:ListItem Text="FREEZE" Value="FREEZE" />
+                            <asp:ListItem Text="PACKING" Value="PACKING" />
+                            <asp:ListItem Text="DOCUMENTING" Value="DOCUMENTING" />
+                            <asp:ListItem Text="DISPATCH" Value="DISPATCH" />
+                        </asp:DropDownList>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="250px" align="right">Branch Name :
+                    </td>
+                    <td align="left">
+                        <asp:LinkButton ID="lbtnBranchName" runat="server" Text="" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" align="center">Comments<br />
+                        <asp:TextBox ID="txtBComments" runat="server" Height="110px" Width="340px" TextMode="MultiLine"
+                            ForeColor="OrangeRed" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" align="center">
+                        <asp:Button ID="btnBSubmit" runat="server" Text="Submit" OnClick="btnBSubmit_Click"
+                            CssClass="fb8" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="divCollectingDetails" runat="server" visible="false">
+            <div id="header_Text">
+                Collecting Details
+            </div>
+            <table align="center">
+                <tr>
+                    <td colspan="6" align="center">Product Name<br />
+                        <asp:DropDownList ID="ddlSelectProduct" runat="server" OnSelectedIndexChanged="ddlSelectProduct_SelectedIndexChanged"
+                            AutoPostBack="true" Style="width: 220px;">
+                        </asp:DropDownList>
+                    </td>
+                </tr>
+                <tr id="trShowICSList" runat="server" visible="false">
+                    <td colspan="6" align="center">
+                        <asp:CheckBoxList ID="chkICSList" AutoPostBack="true" CellPadding="4" CellSpacing="4" runat="server" RepeatDirection="Horizontal" RepeatColumns="4" OnSelectedIndexChanged="chkICSList_SelectedIndexChanged"></asp:CheckBoxList>
+                    </td>
+
+                </tr>
+                <tr id="trButtonDetails" runat="server" visible="false">
+                    <td colspan="2" align="center">
+                        <asp:Button ID="btnFarmer" runat="server" Text="Collection from Farmer" CssClass="btnFarmer"
+                            Width="250px" OnClick="btnFarmer_Click" Enabled="false" />
+                    </td>
+                    <td colspan="2">&nbsp;&nbsp;
+                    </td>
+                    <td colspan="2" align="center">
+                        <asp:Button ID="btnPreorder" runat="server" Text="PreOrder List" CssClass="btnFarmer"
+                            Width="250px" OnClick="btnPreorder_Click" Enabled="false" />
+                    </td>
+                </tr>
+
+                <tr id="trShowDetails" runat="server" visible="false">
+                    <td colspan="2" align="center">Order Quantity<br />
+                        <asp:Label ID="lblOrderQuantity" runat="server" Text="0" ForeColor="DarkOrange"></asp:Label>
+                    </td>
+                    <td colspan="2" align="center">Collected Quantity<br />
+                        <asp:Label ID="lblpresentqty" runat="server" Text="0" ForeColor="DarkGreen"></asp:Label>
+                    </td>
+                    <td colspan="2" align="center">Remaining Quantity<br />
+                        <asp:Label ID="lblAlrcollQty" runat="server" Text="0" ForeColor="DarkGreen"
+                            Visible="true"></asp:Label>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="6"></td>
+                </tr>
+                <tr id="trOtherFarmer" runat="server" visible="false">
+                    <td colspan="2" align="center">Other Farmer Name<br />
+                        <asp:TextBox ID="txtOtherFarmers" runat="server" Text="0" Width="140px"></asp:TextBox>
+                    </td>
+                    <td colspan="2">&nbsp;
+                    </td>
+                    <td colspan="2">Other Farmer Qty<br />
+                        <asp:TextBox ID="txtCollectQTY" runat="server" Text="0" Width="140px"></asp:TextBox>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="6">
+                        <div id="divFarmerCollecting" runat="server" align="center" visible="false">
+                            <table>
+                               <tr style="">
+                                    <td style=" color: blue;">
+                                        <table align="center" style="
+    background-color: #66ccff;
+    padding-left: 5px;  font-weight: bold;  padding: 5px;
+    width: 680px;">
+                                            <tbody><tr>
+                                                <td>Selected Items</td>
+                                            </tr>
+                                        </tbody></table>
+
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" style="text-align: center" id="tdGrid">
+                                        <asp:GridView align="center" HorizontalAlign="Center"  ID="gvSelectedCollectionDetails" runat="server" AutoGenerateColumns="False"
+                                            DataKeyNames="PlantationId,FarmerID,FarmID" OnSorting="gvSelectedCollectionDetails_Sorting"
+                                            AllowSorting="true" CssClass="grid-view" OnRowEditing="gvSelectedCollectionDetails_RowEditing" OnRowDeleting="gvSelectedCollectionDetails_RowDeleting"
+                                             OnRowCancelingEdit="gvSelectedCollectionDetails_RowCancelingEdit" OnRowUpdating="gvSelectedCollectionDetails_RowUpdating"
+                                            OnRowDataBound="gvSelectedCollectionDetails_RowDataBound">
+                                            <Columns>
+                                                <%--<asp:BoundField DataField="FarmerId" HeaderText="Farmer ID" />
+                            <asp:BoundField DataField="FarmID" HeaderText="Farm ID" />--%>
+                                                <asp:BoundField DataField="FarmerCode" ReadOnly="true" HeaderText="Farmer Code" HeaderStyle-HorizontalAlign="Center"
+                                                    ItemStyle-HorizontalAlign="Center" SortExpression="FarmerCode" HeaderStyle-Width="80"></asp:BoundField>
+                                                <asp:BoundField DataField="FirstName" ReadOnly="true" HeaderText="Farmer Name" HeaderStyle-HorizontalAlign="Center"
+                                                    SortExpression="FirstName" HeaderStyle-Width="150"></asp:BoundField>
+                                                <%--<asp:BoundField DataField="AreaCode" HeaderText="PlotCode" HeaderStyle-HorizontalAlign="Center"
+                                                    SortExpression="AreaCode"></asp:BoundField>--%>
+                                               <%-- <asp:BoundField DataField="Lot_No" ReadOnly="true" HeaderText="Batch No" HeaderStyle-HorizontalAlign="Center" HeaderStyle-Width="120"
+                                                    SortExpression="Lot_No"></asp:BoundField>
+                                                <asp:BoundField DataField="TotalProductQuantity" ReadOnly="true" HeaderText="Actual Quanity" HeaderStyle-HorizontalAlign="Center"
+                                                    ItemStyle-HorizontalAlign="Center" DataFormatString="{0:0.00}" SortExpression="TotalProductQuantity" HeaderStyle-Width="100"></asp:BoundField>
+                                                <asp:BoundField DataField="SoldTotalQty" ReadOnly="true" HeaderText="Sold Quanity" HeaderStyle-HorizontalAlign="Center"
+                                                    ItemStyle-HorizontalAlign="Center" SortExpression="SoldTotalQty" HeaderStyle-Width="90"></asp:BoundField>--%>
+                                                <asp:BoundField DataField="Avaliable" ReadOnly="true" HeaderText="Avaliable Quanity" HeaderStyle-Width="100" ItemStyle-Font-Bold="true"
+                                                    HeaderStyle-HorizontalAlign="Center" ItemStyle-ForeColor="DarkGreen" ItemStyle-HorizontalAlign="Center"
+                                                    SortExpression="Avaliable"></asp:BoundField>
+                                                <asp:TemplateField HeaderText="Collect Quanity" HeaderStyle-HorizontalAlign="Center" HeaderStyle-Width="100">
+                                                    <ItemTemplate >
+                                                        <asp:Label ID="lblCollectQty" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "AvailableQuantity")%>'></asp:Label>
+
+                                                    </ItemTemplate>
+                                                    <EditItemTemplate>
+                                                        <asp:TextBox ID="txtCollectQty" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "AvailableQuantity")%>'></asp:TextBox>
+                                                    </EditItemTemplate>
+                                                </asp:TemplateField>
+                                                
+                                                <asp:TemplateField HeaderStyle-Width="150" HeaderText="  ">
+                                                    <EditItemTemplate>
+                                                        <asp:Button ID="ButtonUpdate" runat="server" style="padding:5px" CommandName="Update" Text="Save"  />
+                                                        <asp:Button ID="ButtonCancel" runat="server" style="padding:5px" CommandName="Cancel" Text="Cancel" />
+                                                    </EditItemTemplate>
+                                                    <ItemTemplate>
+                                                        <asp:Button ID="ButtonEdit" runat="server" style="padding:5px" CommandName="Edit" Text="Edit" />
+                                                        <asp:Button ID="ButtonDelete" runat="server" style="padding:5px" CommandName="Delete" Text="Remove" />
+                                                    </ItemTemplate>
+                                                    
+                                                </asp:TemplateField>
+                                            </Columns>
+                                            <HeaderStyle CssClass="gvheader" />
+                                            <AlternatingRowStyle CssClass="gvalternate" />
+                                            <RowStyle CssClass="gvnormal" />
+                                            <EmptyDataTemplate>
+                                                <table cellspacing="2" cellpadding="3" rules="all" class="grid-view">
+                                                    <tr class="gvheader">
+                                                        <th scope="col">Farmer Code
+                                                        </th>
+                                                        <th scope="col">Farmer Name
+                                                        </th>
+                                                        <%--<th scope="col">Batch No</th>
+                                                        <th scope="col">Actual Quanity
+                                                        </th>
+                                                        <th scope="col">Sold Quanity
+                                                        </th>--%>
+                                                        <th scope="col">Avaliable Quanity
+                                                        </th>
+                                                        <th scope="col">Collect Quanity
+                                                        </th>
+                                                        <th scope="col">
+                                                        </th>
+                                                    </tr>
+                                                    <tr class="gvnormal">
+                                                        <td colspan="8" style="font-weight: bold; color: red; text-align: center">No Item(s) collected from farmer yet.
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </EmptyDataTemplate>
+                                            <EmptyDataRowStyle ForeColor="Red" Font-Bold="true" HorizontalAlign="Center" VerticalAlign="Middle" />
+                                        </asp:GridView>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" style="text-align: center">
+                                        <table cellpadding="5" cellspacing="5" align="center">
+                                            <tr>
+                                                <td style="font-weight: bold">Farmer Name / Code : </td>
+                                                <td>
+                                                    <asp:TextBox ID="txtFarmerSearch" runat="server" placeholder="Farmer Name / Code" Style="height: 40px; width: 300px; line-height: 20px; font-size: 20px; vertical-align: middle; padding-left: 5px;"></asp:TextBox></td>
+                                                <td>
+                                                    <asp:Button ID="btnFarmerSearch" CssClass="fb8" runat="server" Text="Search" OnClick="btnFarmerSearch_Click" /></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <asp:GridView ID="gvCollecingDetails" runat="server" AutoGenerateColumns="False"
+                                            DataKeyNames="PlantationId,FarmerID,FarmID" OnSorting="gvCollecingDetails_Sorting"
+                                            AllowSorting="true" CssClass="grid-view">
+                                            <Columns>
+                                                <%--<asp:BoundField DataField="FarmerId" HeaderText="Farmer ID" />
+                            <asp:BoundField DataField="FarmID" HeaderText="Farm ID" />--%>
+                                                <asp:BoundField DataField="FarmerCode" HeaderText="Farmer Code" HeaderStyle-HorizontalAlign="Center"
+                                                    ItemStyle-HorizontalAlign="Center" SortExpression="FarmerCode"></asp:BoundField>
+                                                <asp:BoundField DataField="FirstName" HeaderText="Farmer Name" HeaderStyle-HorizontalAlign="Center"
+                                                    SortExpression="FirstName"></asp:BoundField>
+                                                <%--<asp:BoundField DataField="AreaCode" HeaderText="PlotCode" HeaderStyle-HorizontalAlign="Center"
+                                                    SortExpression="AreaCode"></asp:BoundField>--%>
+                                                <asp:BoundField DataField="Lot_No" HeaderText="Batch No" HeaderStyle-HorizontalAlign="Center"
+                                                    SortExpression="Lot_No"></asp:BoundField>
+                                                <asp:BoundField DataField="TotalProductQuantity" HeaderText="Actual Quanity" HeaderStyle-HorizontalAlign="Center"
+                                                    ItemStyle-HorizontalAlign="Center" DataFormatString="{0:0.00}" SortExpression="TotalProductQuantity"></asp:BoundField>
+                                                <asp:BoundField DataField="SoldTotalQty" HeaderText="Sold Quanity" HeaderStyle-HorizontalAlign="Center"
+                                                    ItemStyle-HorizontalAlign="Center" SortExpression="SoldTotalQty"></asp:BoundField>
+                                                <asp:BoundField DataField="Avaliable" HeaderText="Avaliable Quanity" ItemStyle-Font-Bold="true"
+                                                    HeaderStyle-HorizontalAlign="Center" ItemStyle-ForeColor="DarkGreen" ItemStyle-HorizontalAlign="Center"
+                                                    SortExpression="Avaliable"></asp:BoundField>
+                                                <asp:TemplateField HeaderText="Collect Quanity" HeaderStyle-HorizontalAlign="Center">
+                                                    <ItemTemplate>
+                                                        <asp:TextBox ID="txtCollectQty" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "AvailableQuantity")%>'></asp:TextBox>
+                                                    </ItemTemplate>
+                                                </asp:TemplateField>
+                                                <asp:TemplateField HeaderText="Collect" HeaderStyle-HorizontalAlign="Center">
+                                                    <ItemTemplate>
+                                                        <%--<asp:CheckBox ID="cbCollecting" runat="server" />--%>
+                                                        <asp:CheckBox ID="cbCollecting" Checked='<%# DataBinder.Eval(Container.DataItem, "Collect")%>' runat="server" onclick="javascript:validateGridQuantity()" AutoPostBack="false" />
+                                                    </ItemTemplate>
+                                                </asp:TemplateField>
+                                            </Columns>
+                                            <HeaderStyle CssClass="gvheader" />
+                                            <AlternatingRowStyle CssClass="gvalternate" />
+                                            <RowStyle CssClass="gvnormal" />
+                                        </asp:GridView>
+                                    </td>
+                                </tr>
+                                <tr id="trSearchButtons" runat="server" visible="true">
+                                    <td align="center">
+                                        <table cellpadding="5" cellspacing="5" align="center">
+                                            <tr>
+                                                <td>
+                                                    <asp:Button ID="btnFarmerCollectSearchapply" runat="server" Text="Apply" CssClass="fb8" OnClick="btnFarmerCollectSearchapply_Click" /></td>
+                                                <td>
+                                                    <asp:Button ID="btnFarmerSearchCancel"  Visible="false" runat="server" Text="Cancel" CssClass="fb8" OnClick="btnFarmerSearchCancel_Click" /></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr align="center">
+                                    <td>
+                                        <asp:Button ID="btnFarmercollt" CssClass="fb8" runat="server" Text="Save" OnClick="btnFarmercollt_Click" />
+                                        &nbsp;<asp:Button ID="btnDisablecollectSave" runat="server" Text="Save" CssClass="fb8_disable" ForeColor="Gray" Enabled="false" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div id="divPerOrderCollecting" runat="server" align="center" visible="false">
+                            <table>
+                                <tr>
+                                    <td colspan="4">
+                                        <asp:GridView ID="gvPreorderCollection" runat="server" AutoGenerateColumns="False"
+                                            DataKeyNames="PlantationId,FarmerID,FarmID,CollectionTransactionID">
+                                            <Columns>
+                                                <asp:BoundField DataField="Blending_BatchID" HeaderText="Batch ID" HeaderStyle-HorizontalAlign="Center"></asp:BoundField>
+                                                <asp:BoundField DataField="LotNumber" HeaderText="Batch Number" HeaderStyle-HorizontalAlign="Center"
+                                                    Visible="false"></asp:BoundField>
+                                                <asp:BoundField DataField="TotalQty" HeaderText="Actual Qty" HeaderStyle-HorizontalAlign="Center"
+                                                    ItemStyle-HorizontalAlign="Center"></asp:BoundField>
+                                                <asp:BoundField DataField="SoldQty" HeaderText="SoldQty" HeaderStyle-HorizontalAlign="Center"
+                                                    ItemStyle-HorizontalAlign="Center"></asp:BoundField>
+                                                <asp:BoundField DataField="AvaliableQty" HeaderText="Avaliable Qty" HeaderStyle-HorizontalAlign="Center"
+                                                    ItemStyle-Font-Bold="true" ItemStyle-ForeColor="DarkGreen" ItemStyle-HorizontalAlign="Center"></asp:BoundField>
+                                                <asp:TemplateField HeaderText="Collect Quanity" HeaderStyle-HorizontalAlign="Center">
+                                                    <ItemTemplate>
+                                                        <asp:TextBox ID="txtCollectQty" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "CollectedQuantity")%>'></asp:TextBox>
+                                                        <itemstyle horizontalalign="Center"></itemstyle>
+                                                    </ItemTemplate>
+                                                </asp:TemplateField>
+                                                <asp:TemplateField HeaderText="Collect" HeaderStyle-HorizontalAlign="Center">
+                                                    <ItemTemplate>
+                                                        <asp:CheckBox ID="cbCollectingPreorder" Checked='<%# DataBinder.Eval(Container.DataItem, "Collect")%>' runat="server" AutoPostBack="false" onclick="javascript:calculatePreorderQuantity()" OnCheckedChanged="cbCollectingPreorder_CheckedChanged1" />
+                                                        <itemstyle horizontalalign="Center"></itemstyle>
+                                                    </ItemTemplate>
+                                                </asp:TemplateField>
+                                            </Columns>
+                                            <HeaderStyle CssClass="gvheader" />
+                                            <AlternatingRowStyle CssClass="gvalternate" />
+                                            <RowStyle CssClass="gvnormal" />
+                                        </asp:GridView>
+                                    </td>
+                                </tr>
+                                <tr id="GenerateBID" runat="server" visible="false">
+                                    <td colspan="2" align="right">LotNumber :
+                                        <asp:Label ID="lblBatchID" runat="server" ForeColor="#FF6600"></asp:Label>
+                                    </td>
+                                    <td colspan="4" align="center">
+                                        <asp:Button ID="btnGenerateBatchID" CssClass="fb8" runat="server" Text="Click Here"
+                                            OnClick="btnGenerateBatchID_Click" />
+                                    </td>
+                                </tr>
+                                <tr align="center">
+                                    <td colspan="6">
+                                        <asp:Button ID="btnPrecollt" CssClass="fb8" runat="server" Text="Save" OnClick="btnPrecollt_Click" />
+                                        &nbsp;<asp:Button ID="btnDisablepreorderSave" runat="server" Text="Save" CssClass="fb8_disable" ForeColor="Gray" Enabled="false"/>
+                                        &nbsp;&nbsp;<asp:Button ID="btnRedirectPreorder" runat="server" Text="Go to Pre-Order" CssClass="fb8" OnClick="btnRedirectPreorder_Click" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="6"></td>
+                </tr>
+                <tr id="trbtnCollectSubmit" runat="server" visible="false">
+                    <td colspan="6" align="center">
+                        <asp:Button ID="btncollectSubmit" CssClass="fb8" runat="server" Text="Submit" OnClick="btncollectSubmit_Click" />&nbsp;
+                        <asp:Button ID="btnDisablecollectSubmit" runat="server" Text="Submit" CssClass="fb8_disable"
+                            Visible="false" ForeColor="Gray" Enabled="false" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="divBlendingDetails" runat="server" visible="false">
+            <div id="header_Text">
+                Blending Details
+            </div>
+            <table align="center">
+                <tr>
+                    <td colspan="3">
+                        <asp:HiddenField ID="hfProductID" runat="server" />
+                        <asp:HiddenField ID="hf" runat="server" />
+                        <asp:Label ID="lblCollectionID" runat="server" ForeColor="Orange" Visible="false" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3" align="center">Product Name<br />
+                        <asp:DropDownList ID="ddlBlendProduct" runat="server" AutoPostBack="true" Style="width: 220px;"
+                            OnSelectedIndexChanged="ddlBlendProduct_SelectedIndexChanged">
+                        </asp:DropDownList>
+                    </td>
+                </tr>
+                <div id="divBlendDetails" runat="server" visible="false">
+                    <tr align="center">
+                        <td>Net Quanity<br />
+                            <asp:Label ID="lblNetQty" runat="server" ForeColor="Orange" Visible="false" />
+                        </td>
+                        <td>
+                            <asp:Label ID="lblAlrBlendQty" runat="server" ForeColor="Orange" Text="0" Visible="false" />
+                        </td>
+                        <td>Blend Quanity<br />
+                            <asp:Label ID="lblBlendQty" runat="server" ForeColor="Red" Style="display: none" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" align="center">
+                            <asp:GridView ID="gvBlending" runat="server" AutoGenerateColumns="False" DataKeyNames="FarmerCode,FarmerID"
+                                OnRowCommand="gvBlending_RowCommand1" CssClass="grid-view">
+                                <Columns>
+                                    <asp:BoundField DataField="FarmerID" HeaderText="Farmer ID" ItemStyle-HorizontalAlign="Center"
+                                        Visible="false"></asp:BoundField>
+                                    <asp:BoundField DataField="FarmID" HeaderText="Farmer ID" ItemStyle-HorizontalAlign="Center"
+                                        Visible="false"></asp:BoundField>
+                                    <asp:BoundField DataField="FarmerCode" HeaderText="Farmer Code" ItemStyle-HorizontalAlign="Center"></asp:BoundField>
+                                    <asp:BoundField DataField="FarmerName" HeaderText="Farmer Name" />
+                                    <asp:BoundField DataField="PlotCode" HeaderText="Plot Code" Visible="false" />
+                                    <asp:BoundField DataField="Lotnumber" HeaderText="Batch No" />
+                                    <asp:BoundField DataField="CollectionQty" HeaderText="Quantity" ItemStyle-HorizontalAlign="Center"
+                                        DataFormatString="{0:0.00}"></asp:BoundField>
+                                    <asp:TemplateField HeaderText="Blend" HeaderStyle-HorizontalAlign="Center">
+                                        <ItemTemplate>
+                                            <asp:CheckBox ID="cbBlending" runat="server" AutoPostBack="false" onclick="javascript:calculateBlendingQuantity()" OnCheckedChanged="cbBlending_CheckedChanged1" />
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                </Columns>
+                                <HeaderStyle CssClass="gvheader" />
+                                <AlternatingRowStyle CssClass="gvalternate" />
+                                <RowStyle CssClass="gvnormal" />
+                            </asp:GridView>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" align="center">
+                            <asp:GridView ID="gvBlendPreorder" runat="server" AutoGenerateColumns="False">
+                                <Columns>
+                                    <asp:BoundField DataField="Blending_BatchID" HeaderText="Batch ID" HeaderStyle-HorizontalAlign="Center"></asp:BoundField>
+                                    <asp:BoundField DataField="CollectionQty" HeaderText="Quantity" HeaderStyle-HorizontalAlign="Center"
+                                        ItemStyle-HorizontalAlign="Center"></asp:BoundField>
+                                    <asp:TemplateField HeaderText="Blend" HeaderStyle-HorizontalAlign="Center">
+                                        <ItemTemplate>
+                                            <asp:CheckBox ID="cbBlendingPreorder" runat="server" AutoPostBack="false" onclick="javascript:calculateBlendingQuantity()" OnCheckedChanged="cbBlendingPreorder_CheckedChanged1" />
+                                            <itemstyle horizontalalign="Center"></itemstyle>
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                </Columns>
+                                <HeaderStyle CssClass="gvheader" />
+                                <AlternatingRowStyle CssClass="gvalternate" />
+                                <RowStyle CssClass="gvnormal" />
+                            </asp:GridView>
+                        </td>
+                    </tr>
+                    <tr align="right">
+                        <td>LotNumber :
+                        </td>
+                        <td align="left">
+                            <asp:Label ID="lblLotNum" runat="server" ForeColor="#FF6600"></asp:Label>
+                        </td>
+                        <td>
+                            <asp:Button ID="btnGenLot" CssClass="fb8" runat="server" Text="Generate Lot" OnClick="btnGenLot_Click" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" align="center"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" align="center">
+                            <asp:Button ID="btnBlendSubmit" runat="server" Text="Submit" CssClass="fb8" OnClick="btnBlendSubmit_Click" />&nbsp;
+                            <asp:Button ID="btnDisableBlendSubmit" runat="server" Text="Submit" CssClass="fb8_disable"
+                                Visible="false" Enabled="false" ForeColor="Gray" />
+                        </td>
+                    </tr>
+                </div>
+            </table>
+        </div>
+        <div id="divTesting" runat="server" align="center" visible="false">
+            <div id="header_Text">
+                Testing Details
+            </div>
+            <div>
+                Product Name<br />
+                <asp:DropDownList ID="ddlTestProduct" runat="server" AutoPostBack="true" Style="width: 220px;"
+                    OnSelectedIndexChanged="ddlTestProduct_SelectedIndexChanged" />
+            </div>
+            <div id="divTestResults" runat="server" visible="false">
+                <table>
+                    <tr>
+                        <td>
+                            <asp:GridView ID="gvTesting" runat="server" AutoGenerateColumns="False" CssClass="grid-view"
+                                OnRowCommand="gvTesting_RowCommand">
+                                <Columns>
+                                    <asp:TemplateField HeaderText="Parameter">
+                                        <ItemTemplate>
+                                            <asp:TextBox ID="txtPara" runat="server" Height="25px" Width="120px" Text='<%# DataBinder.Eval(Container.DataItem, "Parameter")%>' />
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                    <asp:TemplateField HeaderText="Analysis Value">
+                                        <ItemTemplate>
+                                            <asp:TextBox ID="txtAValue" runat="server" Height="25px" Width="120px" Text='<%# DataBinder.Eval(Container.DataItem, "AnalysisValue")%>' />
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                    <asp:TemplateField HeaderText="Low">
+                                        <ItemTemplate>
+                                            <asp:TextBox ID="txtLow" runat="server" Height="25px" Width="120px" Text='<%# DataBinder.Eval(Container.DataItem, "Low")%>' />
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                    <asp:TemplateField HeaderText="High">
+                                        <ItemTemplate>
+                                            <asp:TextBox ID="txtHigh" runat="server" Height="25px" Width="120px" Text='<%# DataBinder.Eval(Container.DataItem, "High")%>' />
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                    <asp:TemplateField HeaderText="Testing Method">
+                                        <ItemTemplate>
+                                            <asp:TextBox ID="txtTmethod" runat="server" Height="25px" Width="120px" Text='<%# DataBinder.Eval(Container.DataItem, "TestingMethod")%>' />
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                    <asp:ButtonField ButtonType="Button" Text="Add" CommandName="Add" ControlStyle-CssClass="fb8_go" />
+                                    <asp:ButtonField ButtonType="Button" Text="Del" CommandName="Remove" ControlStyle-CssClass="fb8_go" />
+                                </Columns>
+                                <HeaderStyle CssClass="gvheader" />
+                                <AlternatingRowStyle CssClass="gvalternate" />
+                                <RowStyle CssClass="gvnormal" />
+                            </asp:GridView>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div id="divTestingButtons" runat="server" align="center" visible="false">
+                <asp:Button ID="btnTestingSubmit" runat="server" Text="Submit" CssClass="fb8" OnClick="btnTestingSubmit_Click" />&nbsp;
+                <asp:Button ID="btnTestinsDisable" runat="server" Text="Submit" CssClass="fb8_disable"
+                    Visible="false" ForeColor="Gray" Enabled="false" />
+            </div>
+        </div>
+        <div id="divFreeze" runat="server" align="center" visible="false">
+            <div id="header_Text">
+                Freeze Details
+            </div>
+            <table>
+                <tr>
+                    <td>
+                        <asp:GridView ID="gvFreeze" DataKeyNames="FreezeID,ProductID" runat="server" AutoGenerateColumns="False"
+                            BackColor="White" BorderColor="#DEDFDE" BorderStyle="None" BorderWidth="1px"
+                            CellPadding="4" ForeColor="Black" GridLines="Vertical" OnRowCommand="gvFreeze_RowCommand">
+                            <RowStyle BackColor="#F7F7DE" />
+                            <Columns>
+                                <asp:BoundField DataField="ProductName" HeaderText="Product Name" />
+                                <asp:BoundField DataField="Quantity" HeaderText="Quantity" ItemStyle-HorizontalAlign="Center" />
+                                <asp:BoundField DataField="FBatchID" HeaderText="F Batch No" />
+                                <asp:ButtonField ButtonType="Button" Text="Freeze" ControlStyle-CssClass="fb8" CommandName="Freeze" />
+                            </Columns>
+                            <FooterStyle BackColor="#CCCC99" />
+                            <PagerStyle BackColor="#F7F7DE" ForeColor="Black" HorizontalAlign="Right" />
+                            <SelectedRowStyle BackColor="#CE5D5A" Font-Bold="True" ForeColor="White" />
+                            <HeaderStyle BackColor="#6B696B" Font-Bold="True" ForeColor="White" />
+                            <AlternatingRowStyle BackColor="White" />
+                        </asp:GridView>
+                    </td>
+                </tr>
+            </table>
+            <div>
+                <asp:DataList ID="dlFreeze" runat="server" BackColor="White" BorderColor="#DEDFDE"
+                    BorderStyle="None" BorderWidth="1px" CellPadding="4" ForeColor="Black" GridLines="Vertical"
+                    OnItemCommand="dlFreeze_ItemCommand">
+                    <ItemTemplate>
+                        <table width="100%">
+                            <tr align="center">
+                                <td style="width: 130px; color: Red;">Date
+                                </td>
+                                <td style="width: 100px; color: Red;">F Batch No
+                                </td>
+                                <td style="width: 100px; color: Red;">Qty in KG
+                                </td>
+                                <td style="width: 100px; color: Red;">Products received
+                                </td>
+                                <td style="width: 100px; color: Red;">Qty in KG
+                                </td>
+                                <td style="width: 100px; color: Red;">Batch No
+                                </td>
+                                <td>
+                                    <asp:Button ID="btnAddProduct" runat="server" Text="ADD" CssClass="fb8_go" CommandName="AddProduct" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" style="width: 130px;">
+                                    <%# DataBinder.Eval(Container.DataItem, "CreatedDate" , "{0:dd MMM yyyy}")%>
+                                </td>
+                                <td style="width: 100px;">
+                                    <%# DataBinder.Eval(Container.DataItem, "FBatchID")%>
+                                </td>
+                                <td style="width: 100px;" align="center">
+                                    <%# DataBinder.Eval(Container.DataItem, "Quntatiy")%>
+                                </td>
+                                <td colspan="4">
+                                    <asp:GridView ID="gvFreezeTran" DataKeyNames="FreezeTransactionID" runat="server"
+                                        AutoGenerateColumns="false" BackColor="White" BorderColor="#DEDFDE" BorderStyle="None"
+                                        BorderWidth="1px" CellPadding="4" ForeColor="Black" GridLines="Vertical">
+                                        <Columns>
+                                            <%--<asp:BoundField DataField="FreezeProductName" />
+                                            <asp:BoundField DataField="FreezeQuantity" />--%>
+                                            <asp:TemplateField>
+                                                <ItemTemplate>
+                                                    <asp:TextBox ID="txtFProductName" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "FreezeProductName")%>'
+                                                        Width="50%" />
+                                                </ItemTemplate>
+                                            </asp:TemplateField>
+                                            <asp:TemplateField>
+                                                <ItemTemplate>
+                                                    <asp:TextBox ID="txtFQuantity" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "FreezeQuantity")%>'
+                                                        Width="50%" />
+                                                </ItemTemplate>
+                                            </asp:TemplateField>
+                                            <asp:BoundField DataField="FreezeProductBatchID" />
+                                        </Columns>
+                                        <RowStyle BackColor="#F7F7DE" />
+                                        <FooterStyle BackColor="#CCCC99" />
+                                        <PagerStyle BackColor="#F7F7DE" ForeColor="Black" HorizontalAlign="Right" />
+                                        <SelectedRowStyle BackColor="#CE5D5A" Font-Bold="True" ForeColor="White" />
+                                        <HeaderStyle BackColor="#6B696B" Font-Bold="True" ForeColor="White" />
+                                        <AlternatingRowStyle BackColor="White" />
+                                    </asp:GridView>
+                                </td>
+                            </tr>
+                        </table>
+                    </ItemTemplate>
+                    <FooterStyle BackColor="#CCCC99" />
+                    <AlternatingItemStyle BackColor="White" />
+                    <ItemStyle BackColor="#F7F7DE" />
+                    <SelectedItemStyle BackColor="#CE5D5A" Font-Bold="True" ForeColor="White" />
+                    <HeaderStyle BackColor="#6B696B" Font-Bold="True" ForeColor="White" />
+                </asp:DataList>
+                <br />
+                <br />
+                <br />
+                <asp:Button ID="btnFreezeSubmit" runat="server" Text="Submit" CssClass="fb8" OnClick="btnFreezeSubmit_Click" />&nbsp;
+                <asp:Button ID="btnDisableFrzee" runat="server" Text="Submit" CssClass="fb8_disable"
+                    Visible="false" ForeColor="Gray" Enabled="false" />
+            </div>
+        </div>
+        <div id="divPackingDetails" runat="server" visible="false">
+            <div id="header_Text">
+                Packing Details
+            </div>
+            <table>
+                <tr>
+                    <td align="center">Drum Ref Numbers<br />
+                        <asp:TextBox ID="txtDrumFr" runat="server" Height="30px" Style="margin-bottom: 1px"
+                            Width="180px" Font-Size="Medium" Text="1"></asp:TextBox>
+                        &nbsp; &nbsp; &nbsp;<asp:TextBox ID="txtDrumT" runat="server" Height="30px" Style="margin-bottom: 1px"
+                            Width="180px" Font-Size="Medium"></asp:TextBox>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="6">
+                        <asp:GridView ID="gvPackingDetails" runat="server" AutoGenerateColumns="False" DataKeyNames="OrderID"
+                            CssClass="grid-view">
+                            <Columns>
+                                <asp:BoundField DataField="ProductID" HeaderText="Product ID" ItemStyle-HorizontalAlign="Center"></asp:BoundField>
+                                <asp:BoundField DataField="ProductName" HeaderText="Product Name" HeaderStyle-HorizontalAlign="Center"></asp:BoundField>
+                                <asp:BoundField DataField="Blending_BatchID" HeaderText="Lot Number" ItemStyle-HorizontalAlign="Center"></asp:BoundField>
+                                <asp:BoundField DataField="Lotnumber" HeaderText="Batch No" HeaderStyle-HorizontalAlign="Center"
+                                    Visible="false"></asp:BoundField>
+                                <asp:BoundField DataField="NetQuantity" HeaderText="Actual Quantity" ItemStyle-HorizontalAlign="Center"
+                                    DataFormatString="{0:0.00}"></asp:BoundField>
+                                <asp:TemplateField HeaderText="Gross Quantity" ItemStyle-HorizontalAlign="Center">
+                                    <ItemTemplate>
+                                        <asp:TextBox ID="txtGrossQty" runat="server" Style="width: 80px;" Text='<%# DataBinder.Eval(Container.DataItem, "GrossQuantity" )%>'></asp:TextBox>
+                                        <itemstyle horizontalalign="Center"></itemstyle>
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                                <asp:BoundField DataField="Packing25" HeaderText="Packing 25KG (Actual)" ItemStyle-HorizontalAlign="Center"></asp:BoundField>
+                                <asp:BoundField DataField="Packing180" HeaderText="Packing 180KG (Actual)" ItemStyle-HorizontalAlign="Center"></asp:BoundField>
+                                <asp:TemplateField HeaderText="Packing 25KG" HeaderStyle-HorizontalAlign="Center">
+                                    <ItemTemplate>
+                                        <asp:TextBox ID="txtPacking25" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "Packing25")%>'
+                                            Style="width: 80px;"></asp:TextBox>
+                                        <itemstyle horizontalalign="Center"></itemstyle>
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                                <asp:TemplateField HeaderText="Packing 180KG " HeaderStyle-HorizontalAlign="Center">
+                                    <ItemTemplate>
+                                        <asp:TextBox ID="txtPacking180" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "Packing180")%>'
+                                            Style="width: 80px;"></asp:TextBox>
+                                        <itemstyle horizontalalign="Center"></itemstyle>
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                            </Columns>
+                            <HeaderStyle CssClass="gvheader" />
+                            <AlternatingRowStyle CssClass="gvalternate" />
+                            <RowStyle CssClass="gvnormal" />
+                        </asp:GridView>
+                    </td>
+                </tr>
+                <tr>
+                    &nbsp; </td>
+                </tr>
+                <tr>
+                    <td colspan="6" align="center">
+                        <asp:Button ID="btnPackingDetailsSubmit" CssClass="fb8" runat="server" Text="Submit"
+                            OnClick="btnPackingDetailsSubmit_Click" />&nbsp;
+                        <asp:Button ID="btnDisablePacking" runat="server" Text="Submit" CssClass="fb8_disable"
+                            Visible="false" ForeColor="Gray" Enabled="false" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="divReports" runat="server" visible="false">
+            <div id="header_Text">
+                &nbsp;Generate Documents
+            </div>
+            <table align="center">
+                <tr align="right">
+                    <td>Invoice :
+                    </td>
+                    <td align="center">
+                        <asp:HyperLink ID="hlInvoice" runat="server" NavigateUrl="" Text="" Target="_blank" />
+                    </td>
+                    <td>
+                        <asp:Button ID="btnInvoice" runat="server" CssClass="fb8" Text="Create Invoice" OnClick="btnInvoice_Click"
+                            Visible="false" />
+                        <asp:Button ID="btnDisableInv" runat="server" Text="Create Invoice" CssClass="fb8_disable"
+                            ForeColor="Gray" Enabled="false" />
+                    </td>
+                    <td>
+                        <asp:Button ID="btnPP" runat="server" CssClass="fb8" Text="Create COA- PP" OnClick="btnPP_Click"
+                            Visible="false" />
+                        <asp:Button ID="btnDisablePP" runat="server" Text="Create COA- PP" CssClass="fb8_disable"
+                            ForeColor="Gray" Enabled="false" />
+                    </td>
+                </tr>
+                <tr align="right">
+                    <td>Packing :
+                    </td>
+                    <td align="center">
+                        <asp:HyperLink ID="hlPacking" runat="server" Text="Open" Target="_blank" />
+                    </td>
+                    <td>
+                        <asp:Button ID="btnPacking" runat="server" CssClass="fb8" Text="Create Packing" OnClick="btnPacking_Click"
+                            Visible="false" />
+                        <asp:Button ID="btnDisablePack" runat="server" Text="Create Packing" CssClass="fb8_disable"
+                            ForeColor="Gray" Enabled="false" />
+                    </td>
+                    <td>
+                        <asp:Button ID="btnAR" runat="server" CssClass="fb8" Text="Create COA-AR" OnClick="btnAR_Click"
+                            Visible="false" />
+                        <asp:Button ID="btnDisableAR" runat="server" Text="Create COA-AR" CssClass="fb8_disable"
+                            ForeColor="Gray" Enabled="false" />
+                    </td>
+                </tr>
+                <tr align="right">
+                    <td>Non-Haz Sea :
+                    </td>
+                    <td align="center">
+                        <asp:HyperLink ID="hlHazSea" runat="server" Text="Open" Target="_blank" />
+                    </td>
+                    <td>
+                        <asp:Button ID="btnHazsea" runat="server" CssClass="fb8" Text="Create HAZ-SEA" OnClick="btnHazsea_Click"
+                            Visible="false" />
+                        <asp:Button ID="btnDisableHazSea" runat="server" Text="Create HAZ-SEA" CssClass="fb8_disable"
+                            ForeColor="Gray" Enabled="false" />
+                    </td>
+                    <td>
+                        <asp:Button ID="btnSP" runat="server" CssClass="fb8" Text="Create COA-SP" OnClick="btnSP_Click"
+                            Visible="false" />
+                        <asp:Button ID="btnDisableSP" runat="server" Text="Create COA-SP" CssClass="fb8_disable"
+                            ForeColor="Gray" Enabled="false" />
+                    </td>
+                </tr>
+                <tr align="right">
+                    <td>Non-Haz Air :
+                    </td>
+                    <td align="center">
+                        <asp:HyperLink ID="hlHazAir" runat="server" Text="Open" Target="_blank" />
+                    </td>
+                    <td>
+                        <asp:Button ID="btnHazAir" runat="server" CssClass="fb8" Text="Create HAZ-AIR" OnClick="btnHazAir_Click"
+                            Visible="false" />
+                        <asp:Button ID="btnDisableHazAir" runat="server" Text="Create HAZ-AIR" CssClass="fb8_disable"
+                            ForeColor="Gray" Enabled="false" />
+                    </td>
+                    <td>
+                        <asp:Button ID="btnbo" runat="server" CssClass="fb8" Text="Create COA-BO" OnClick="btnbo_Click"
+                            Visible="false" />
+                        <asp:Button ID="btnDisablebo" runat="server" Text="Create COA-BO" CssClass="fb8_disable"
+                            ForeColor="Gray" Enabled="false" />
+                    </td>
+                </tr>
+                <tr align="right">
+                    <td>Cover Letter :
+                    </td>
+                    <td align="center">
+                        <asp:HyperLink ID="hlCoverLetter" runat="server" Text="Open" Target="_blank" />
+                    </td>
+                    <td>
+                        <asp:Button ID="btnCoverLetter" runat="server" CssClass="fb8" Text="Create Cover Letter"
+                            OnClick="btnLetter_Click" Visible="false" />
+                        <asp:Button ID="btnDisableCL" runat="server" Text="Create Cover Letter" CssClass="fb8_disable"
+                            ForeColor="Gray" Enabled="false" />
+                    </td>
+                    <td>
+                        <asp:Button ID="btnCRY" runat="server" CssClass="fb8" Text="Create COA-CRY" OnClick="btnCRY_Click"
+                            Visible="false" />
+                        <asp:Button ID="btnDisableCRY" runat="server" Text="Create COA-CRY" CssClass="fb8_disable"
+                            ForeColor="Gray" Enabled="false" />
+                    </td>
+                </tr>
+                <tr align="right">
+                    <td>Fir Cover Letter :
+                    </td>
+                    <td align="center">
+                        <asp:HyperLink ID="hlFIRCover" runat="server" Text="Open" Target="_blank" />
+                    </td>
+                    <td>
+                        <asp:Button ID="btnFLetter" runat="server" CssClass="fb8" Text="Create Fir Letter"
+                            OnClick="btnFLetter_Click" Visible="false" />
+                        <asp:Button ID="btnDisableFL" runat="server" Text="Create Fir Letter" CssClass="fb8_disable"
+                            ForeColor="Gray" Enabled="false" />
+                    </td>
+                    <td>
+                        <asp:Button ID="btnCRYp" runat="server" CssClass="fb8" Text="Create COA-CRY-P" OnClick="btnCRYp_Click"
+                            Visible="false" />
+                        <asp:Button ID="btnDisableCRYp" runat="server" Text="Create COA-CRY-P" CssClass="fb8_disable"
+                            ForeColor="Gray" Enabled="false" />
+                    </td>
+                </tr>
+                <tr align="right">
+                    <td colspan="2" align="center">Label's :&nbsp;&nbsp;&nbsp;
+                    </td>
+                    <td colspan="1" align="center">
+                        <asp:Button ID="btnLable" runat="server" CssClass="fb8" Text="Create Label" OnClick="btnLable_Click"
+                            Visible="false" />
+                        <asp:Button ID="btnDisableLabel" runat="server" Text="Create Label" CssClass="fb8_disable"
+                            ForeColor="Gray" Enabled="false" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2"></td>
+                    <td colspan="2"></td>
+                </tr>
+                <tr>
+                    <td colspan="4" align="center">
+                        <asp:GridView ID="gvReports" runat="server" BackColor="White" BorderColor="#DEDFDE"
+                            BorderStyle="None" BorderWidth="1px" CellPadding="4" ForeColor="Black" GridLines="Vertical"
+                            AutoGenerateColumns="false">
+                            <Columns>
+                                <asp:BoundField DataField="ProductName" HeaderText="Product Name" />
+                                <asp:HyperLinkField DataNavigateUrlFields="PP" HeaderText="PP" Text="Open" Target="_blank" />
+                                <asp:HyperLinkField DataNavigateUrlFields="AR" HeaderText="AR" Text="Open" Target="_blank" />
+                                <asp:HyperLinkField DataNavigateUrlFields="SP" HeaderText="SP" Text="Open" Target="_blank" />
+                                <asp:HyperLinkField DataNavigateUrlFields="BO" HeaderText="BO" Text="Open" Target="_blank" />
+                                <asp:HyperLinkField DataNavigateUrlFields="CRY" HeaderText="CRY" Text="Open" Target="_blank" />
+                                <asp:HyperLinkField DataNavigateUrlFields="CRY_P" HeaderText="CRY_P" Text="Open"
+                                    Target="_blank" />
+                                <asp:HyperLinkField DataNavigateUrlFields="LABEL" HeaderText="LABEL" Text="Open"
+                                    Target="_blank" />
+                            </Columns>
+                            <RowStyle BackColor="#F7F7DE" />
+                            <FooterStyle BackColor="#CCCC99" />
+                            <PagerStyle BackColor="#F7F7DE" ForeColor="Black" HorizontalAlign="Right" />
+                            <SelectedRowStyle BackColor="#CE5D5A" Font-Bold="True" ForeColor="White" />
+                            <HeaderStyle BackColor="#6B696B" Font-Bold="True" ForeColor="White" />
+                            <AlternatingRowStyle BackColor="White" />
+                        </asp:GridView>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="divBuyerReports" runat="server" visible="false">
+            <div id="header_Text">
+                Buyer Reports
+            </div>
+            <br />
+            <br />
+            <br />
+            <table align="center">
+                <tr>
+                    <td>Invoice :
+                    </td>
+                    <td>
+                        <asp:HyperLink ID="hlBInvoice" runat="server" Text="Open" Target="_blank" />
+                    </td>
+                    <td>
+                        <asp:FileUpload ID="fuBInvoice" runat="server" />
+                    </td>
+                    <td>
+                        <asp:Button ID="btnBInvoice" runat="server" Text="Upload" CssClass="fb8" OnClick="btnBInvoice_Click" />
+                        <asp:Button ID="btnDisableBInvoice" runat="server" Text="Upload" CssClass="fb8_disable"
+                            ForeColor="Gray" Visible="false" Enabled="false" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Scanned GLC:
+                    </td>
+                    <td>
+                        <asp:HyperLink ID="hlBGLCInfo" runat="server" Text="Open" Target="_blank" />
+                    </td>
+                    <td>
+                        <asp:FileUpload ID="fuBGLCInfo" runat="server" />
+                    </td>
+                    <td>
+                        <asp:Button ID="btnBGLCInfo" runat="server" Text="Upload" CssClass="fb8" OnClick="btnBGLCInfo_Click" />
+                        <asp:Button ID="btnDisableBGLCInfo" runat="server" Text="Upload" CssClass="fb8_disable"
+                            Visible="false" ForeColor="Gray" Enabled="false" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Truck Bill :
+                    </td>
+                    <td>
+                        <asp:HyperLink ID="hlBTruckBill" runat="server" Text="Open" Target="_blank" />
+                    </td>
+                    <td>
+                        <asp:FileUpload ID="fuBTruckBill" runat="server" />
+                    </td>
+                    <td>
+                        <asp:Button ID="btnBTruckBill" runat="server" Text="Upload" CssClass="fb8" OnClick="btnBTruckBill_Click" />
+                        <asp:Button ID="btnDisableBTruckBill" runat="server" Text="Upload" CssClass="fb8_disable"
+                            Visible="false" ForeColor="Gray" Enabled="false" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>L R :
+                    </td>
+                    <td>
+                        <asp:HyperLink ID="hlBLR" runat="server" Text="Open" Target="_blank" />
+                    </td>
+                    <td>
+                        <asp:FileUpload ID="fuBLR" runat="server" />
+                    </td>
+                    <td>
+                        <asp:Button ID="btnBLR" runat="server" Text="Upload" CssClass="fb8" OnClick="btnBLR_Click" />
+                        <asp:Button ID="btnDisableBLR" runat="server" Text="Upload" CssClass="fb8_disable"
+                            Visible="false" ForeColor="Gray" Enabled="false" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4" align="center">
+                        <asp:Button ID="btnDownload" runat="server" Text="Download ALL" CssClass="fb8" OnClick="btnDownload_Click" />
+                    </td>
+                </tr>
+            </table>
+            <br />
+            <br />
+            <br />
+        </div>
+    </div>
+</asp:Content>

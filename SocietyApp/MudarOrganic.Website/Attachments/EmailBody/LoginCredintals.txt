@@ -1,0 +1,19 @@
+	<p>
+    Dear @CompanyName@,<br/>
+	Greetings !  from Mudar India Exports. Thanks for the registration in with Mudar Organic. Perform all the Operations with Mudar India Exports with ease and comfort using login credentials:<br/>
+	<html>
+	<body>
+	<table border="1">
+	<tr>
+	<td width="25%" bgcolor="#FAEBD7" align="center">Username</td><td width="25%" bgcolor="#FFFFCC" align="center">@login@</td></tr>
+	<tr>
+	<td width="25%" bgcolor="#FAEBD7" align="center">Password</td><td width="25%" bgcolor="#FFFFCC" align="center">@password@</td></tr>
+	</table>
+	</body>
+	</html>
+	<br /><a href="http://mudarorganic.com">Click Here</a>  to Login
+	</p>
+	<br/>
+	Thanks & Regards
+	<br />
+    MudarIndiaExports

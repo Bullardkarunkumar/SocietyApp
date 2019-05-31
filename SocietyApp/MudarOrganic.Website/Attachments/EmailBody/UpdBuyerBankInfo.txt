@@ -1,0 +1,23 @@
+﻿<p>
+<br/>
+Hi <b>@Company@</b><br/>
+Your <b>Edit request</b> Updated Successfully <br/>
+<html>
+	<body>
+	<table border="1" width="100%">
+	<tr><td colspan="2"width="40%" bgcolor="#e2efd9" align="center"><b>Bank Information</b></td>
+	<tr bgcolor="#e2efd9"><td width="40%" align="center">Bank</td><td width="60%" align="center">@Bank@</td></tr>
+	<tr bgcolor="#e2efd9"><td width="40%" align="center">Address1</td><td width="60%" align="center">@Address1@</td></tr>
+	<tr bgcolor="#e2efd9"><td width="40%" align="center">Address2</td><td width="60%" align="center">@Address2@</td></tr>
+	<tr bgcolor="#e2efd9"><td width="40%" align="center">Address3 Line 3</td><td width="60%" align="center">@Address3@</td></tr>
+    <tr bgcolor="#e2efd9"><td width="40%" align="center">City</td><td width="60%" align="center">@City@</td></tr>
+	<tr bgcolor="#e2efd9"><td width="40%" align="center">Province/State</td><td width="60%" align="center">@State@</td></tr>
+    <tr bgcolor="#e2efd9"><td width="40%" align="center">ZIP Code</td><td width="60%" align="center">@PinCode@</td></tr>
+	<tr bgcolor="#e2efd9"><td width="40%" align="center">Country</td><td width="60%" align="center">@Country@</td></tr>
+	</table>
+	</body>
+</html>
+<br/>
+Thanks<br/> 
+<b>Mudar India Exports</b>
+</p>

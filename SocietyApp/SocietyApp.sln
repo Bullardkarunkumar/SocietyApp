@@ -1,0 +1,75 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.202
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "MudarOrganic.Website(1)", "MudarOrganic.Website\", "{21810CBD-9578-4579-939B-C86833A1E9DD}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
+		ProjectReferences = "{ea1bab21-ce5d-47af-83e8-7c2eb73d99fb}|Society.Models.dll;{f463a979-f6c5-4fab-a481-8bfa6a9a6d49}|MudarOrganic.BL.dll;{E8635A3C-532E-436A-90FE-F1337D3C4FDD}|Email.dll;{FFADF2D3-462D-446C-99B0-7CFB872B69D5}|MudarOrganic.Components.dll;{B7B38529-BC6A-49D4-890C-15BB3D48399B}|MudarOrganic.DL.dll;"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_27631"
+		Debug.AspNetCompiler.PhysicalPath = "MudarOrganic.Website\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_27631\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/localhost_27631"
+		Release.AspNetCompiler.PhysicalPath = "MudarOrganic.Website\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_27631\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "27631"
+		SlnRelativePath = "MudarOrganic.Website\"
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MudarOrganic.DL", "MudarOrganic.DL\MudarOrganic.DL.csproj", "{B7B38529-BC6A-49D4-890C-15BB3D48399B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MudarOrganic.Components", "MudarOrganic.Components\MudarOrganic.Components.csproj", "{FFADF2D3-462D-446C-99B0-7CFB872B69D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MudarOrganic.BL", "MudarOrganic.BL\MudarOrganic.BL.csproj", "{F463A979-F6C5-4FAB-A481-8BFA6A9A6D49}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailName", "Email\EmailName.csproj", "{E8635A3C-532E-436A-90FE-F1337D3C4FDD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Society.Models", "Society.Models\Society.Models.csproj", "{EA1BAB21-CE5D-47AF-83E8-7C2EB73D99FB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{21810CBD-9578-4579-939B-C86833A1E9DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21810CBD-9578-4579-939B-C86833A1E9DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21810CBD-9578-4579-939B-C86833A1E9DD}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{21810CBD-9578-4579-939B-C86833A1E9DD}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{B7B38529-BC6A-49D4-890C-15BB3D48399B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7B38529-BC6A-49D4-890C-15BB3D48399B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7B38529-BC6A-49D4-890C-15BB3D48399B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7B38529-BC6A-49D4-890C-15BB3D48399B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFADF2D3-462D-446C-99B0-7CFB872B69D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFADF2D3-462D-446C-99B0-7CFB872B69D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFADF2D3-462D-446C-99B0-7CFB872B69D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFADF2D3-462D-446C-99B0-7CFB872B69D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F463A979-F6C5-4FAB-A481-8BFA6A9A6D49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F463A979-F6C5-4FAB-A481-8BFA6A9A6D49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F463A979-F6C5-4FAB-A481-8BFA6A9A6D49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F463A979-F6C5-4FAB-A481-8BFA6A9A6D49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8635A3C-532E-436A-90FE-F1337D3C4FDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8635A3C-532E-436A-90FE-F1337D3C4FDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8635A3C-532E-436A-90FE-F1337D3C4FDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8635A3C-532E-436A-90FE-F1337D3C4FDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA1BAB21-CE5D-47AF-83E8-7C2EB73D99FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA1BAB21-CE5D-47AF-83E8-7C2EB73D99FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA1BAB21-CE5D-47AF-83E8-7C2EB73D99FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA1BAB21-CE5D-47AF-83E8-7C2EB73D99FB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BCD0E2ED-6EC6-457E-8A99-6CE588ADD6B1}
+	EndGlobalSection
+EndGlobal

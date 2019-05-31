@@ -1,0 +1,842 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Data;
+using System.Data.SqlClient;
+
+using MudarOrganic.Components;
+
+namespace MudarOrganic.DL
+{
+    public static class Order_DL
+    {
+        public static bool OrderInsert(int OrderID, string BuyerID, string BuyerAddress, string OrderStatus
+               , bool Approval, decimal TotalAmount, DateTime OrderDate, int PriceTermsID, int TransportID, string OriginCountry
+               , string LoadingPort, string PaymentTerms, string FreightTerms, string DestinationCountry, string DestinationPort
+               , DateTime OrderDispatchDate, string BranchID, string PurchaseOrderPath, string PurchaseOrderID, string CreatedBy
+               , string ModifiedBy, string ApprovedBy, string Comments, int TypeOfOperation, ref int ReturnOrderID)
+        {
+            bool Result = false;
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+
+            Params.Add(mdbh.AddParameter("OrderID", SqlDbType.Int, OrderID));
+            Params.Add(mdbh.AddParameter("BuyerID", SqlDbType.UniqueIdentifier, new Guid(BuyerID)));
+            Params.Add(mdbh.AddParameter("BuyerAddress", SqlDbType.NVarChar, BuyerAddress.Replace("<br/>", "  ")));
+            Params.Add(mdbh.AddParameter("OrderStatus", SqlDbType.NVarChar, OrderStatus));
+            Params.Add(mdbh.AddParameter("Approval", SqlDbType.Bit, Approval));
+            Params.Add(mdbh.AddParameter("TotalAmount", SqlDbType.Money, TotalAmount));
+            Params.Add(mdbh.AddParameter("OrderDate", SqlDbType.DateTime, OrderDate));
+            Params.Add(mdbh.AddParameter("PriceTermsID", SqlDbType.Int, PriceTermsID));
+            Params.Add(mdbh.AddParameter("TransportID", SqlDbType.Int, TransportID));
+            Params.Add(mdbh.AddParameter("OriginCountry", SqlDbType.NVarChar, OriginCountry));
+            Params.Add(mdbh.AddParameter("LoadingPort", SqlDbType.NVarChar, LoadingPort));
+            Params.Add(mdbh.AddParameter("PaymentTerms", SqlDbType.NVarChar, PaymentTerms));
+            Params.Add(mdbh.AddParameter("FreightTerms", SqlDbType.NVarChar, FreightTerms));
+            Params.Add(mdbh.AddParameter("DestinationCountry", SqlDbType.NVarChar, DestinationCountry));
+            Params.Add(mdbh.AddParameter("DestinationPort", SqlDbType.NVarChar, DestinationPort));
+            Params.Add(mdbh.AddParameter("OrderDispatchDate", SqlDbType.DateTime, OrderDispatchDate));
+            Params.Add(mdbh.AddParameter("BranchID", SqlDbType.UniqueIdentifier, new Guid(BranchID)));
+            Params.Add(mdbh.AddParameter("PurchaseOrderPath", SqlDbType.NVarChar, PurchaseOrderPath));
+            Params.Add(mdbh.AddParameter("PurchaseOrderID", SqlDbType.NVarChar, PurchaseOrderID));
+            Params.Add(mdbh.AddParameter("CreatedBy", SqlDbType.NVarChar, CreatedBy));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("ApprovedBy", SqlDbType.NVarChar, ApprovedBy));
+            Params.Add(mdbh.AddParameter("Comments", SqlDbType.NVarChar, Comments));
+            Params.Add(mdbh.AddParameter("TypeOfOperation", SqlDbType.Int, TypeOfOperation));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, Result, Param_Directions.Param_Out));
+            Params.Add(mdbh.AddParameter("ReturnOrderID", SqlDbType.Int, ReturnOrderID, Param_Directions.Param_Out));
+
+            try
+            {
+                List<string> output = new List<string>();
+
+                mdbh.ExecuteNonQuery(sp.sp_OrderDetails_INSandUPDandDEL, Params, ref output);
+                if (output.Count >= 2)
+                {
+                    Result = Convert.ToBoolean(output[0]);
+                    ReturnOrderID = Convert.ToInt32(output[1]);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Result;
+        }
+        public static bool OrderProducts_INT_UPT_DEL(int OrderID, int ProductID, decimal TotalPrice, string CreatedBy, string ModifiedBy, int Quantity, int Packing25, int Packing180, int TypeOfOperation)
+        {
+            bool Result = false;
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+
+            Params.Add(mdbh.AddParameter("OrderID", SqlDbType.Int, OrderID));
+            Params.Add(mdbh.AddParameter("ProductID", SqlDbType.Int, ProductID));
+            Params.Add(mdbh.AddParameter("TotalPrice", SqlDbType.Money, TotalPrice));
+            Params.Add(mdbh.AddParameter("CreatedBy", SqlDbType.NChar, CreatedBy));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("Quantity", SqlDbType.Int, Quantity));
+            Params.Add(mdbh.AddParameter("Packing25", SqlDbType.Int, Packing25));
+            Params.Add(mdbh.AddParameter("Packing180", SqlDbType.Int, Packing180));
+            Params.Add(mdbh.AddParameter("TypeOfOperation", SqlDbType.Int, TypeOfOperation));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, Result, Param_Directions.Param_Out));
+
+            try
+            {
+                Result =(bool) mdbh.ExecuteNonQuery(sp.sp_OrderProducts_INSandUPDandDEL, Params);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Result;
+        }
+        public static bool OrderDetails_UPD(int OrderID,string OrderStatus,string ModifiedBy,string Comments)
+        {
+            bool Result=false;
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+            Params.Add(mdbh.AddParameter("OrderID",SqlDbType.Int,OrderID));
+            Params.Add(mdbh.AddParameter("OrderStatus",SqlDbType.NVarChar,OrderStatus));
+            Params.Add(mdbh.AddParameter("ModifiedBy",SqlDbType.NVarChar,ModifiedBy));
+            Params.Add(mdbh.AddParameter("Comments", SqlDbType.NVarChar, Comments));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, Result, Param_Directions.Param_Out));
+            try
+            {
+                Result=(bool)mdbh.ExecuteNonQuery(sp.sp_OrderDetails_UPD,Params);
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+            return Result;
+        }
+        public static bool OrderDetails_UPD(int OrderID, string OrderPdfPath, string ModifiedBy)
+        {
+            bool Result = false;
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+            Params.Add(mdbh.AddParameter("OrderID", SqlDbType.Int, OrderID));
+            Params.Add(mdbh.AddParameter("PurchaseOrderPath", SqlDbType.NVarChar, OrderPdfPath));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, Result, Param_Directions.Param_Out));
+            try
+            {
+                Result = (bool)mdbh.ExecuteNonQuery(sp.sp_Order_Pdfpath_UPD, Params);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Result;
+        }
+        public static bool OrderDetails_UPD( string OrderPdfPath, string ModifiedBy, string POID,int OrderID)
+        {
+            bool Result = false;
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+            Params.Add(mdbh.AddParameter("OrderID", SqlDbType.Int, OrderID));
+            Params.Add(mdbh.AddParameter("PurchaseOrderPath", SqlDbType.NVarChar, OrderPdfPath));
+            Params.Add(mdbh.AddParameter("PurchaseOrderID", SqlDbType.NVarChar, POID));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, Result, Param_Directions.Param_Out));
+            try
+            {
+                Result = (bool)mdbh.ExecuteNonQuery(sp.sp_Order_PO_UPD, Params);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Result;
+        }
+        public static bool BranchOrderDetails_UPD(int BranchOrderID, string OrderStatus, string ModifiedBy, string Comments)
+        {
+            bool Result = false;
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+            Params.Add(mdbh.AddParameter("BranchOrderID", SqlDbType.Int,BranchOrderID));
+            Params.Add(mdbh.AddParameter("OrderStatus", SqlDbType.NVarChar, OrderStatus));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("Comments", SqlDbType.NVarChar, Comments));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, Result, Param_Directions.Param_Out));
+            try
+            {
+                Result = (bool)mdbh.ExecuteNonQuery(sp.sp_BranchOrderDetails_UPD, Params);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Result;
+        }
+        public static bool BranchOrderDetails_UPD(int BranchOrderID, string BrnachOrderPath, string ModifiedBy)
+        {
+            bool Result = false;
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+            Params.Add(mdbh.AddParameter("BranchOrderID", SqlDbType.Int, BranchOrderID));
+            Params.Add(mdbh.AddParameter("BrnachOrderPath", SqlDbType.NVarChar, BrnachOrderPath));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, Result, Param_Directions.Param_Out));
+            try
+            {
+                Result = (bool)mdbh.ExecuteNonQuery(sp.sp_BranchOrder_Pdfpath_UPD, Params);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Result;
+        }
+
+        public static DataTable ReturnPOList(string POvalue)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT * FROM dbo.tblOrderDetails WHERE PurchaseOrderID LIKE '%" + POvalue + "%' AND [Delete] = 0");
+        }
+        public static DataTable ReturnBPOList(string BPovalue)
+        {
+
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT * FROM dbo.tblBranchOrder WHERE BranchPOID LIKE '%" + BPovalue + "%' AND [Delete] = 0");
+        }
+        public static DataTable OrderList(string OrderStatus)
+        {
+            string sql =string.Empty;
+            if (OrderStatus == "ALL")
+                sql = "SELECT od.OrderID,PurchaseOrderID,od.OrderStatus,OrderDate,PurchaseOrderPath,BuyerCompanyName,od.BuyerID,bo.BranchPOID,bo.BranchOrderId ,bo.OrderStatus AS 'bOrderStatus' ,od.modifieddate AS 'ClosedDate',od.ApprovedBy,bo.BranchOrderDate,bo.BranchOrderPath FROM tblOrderDetails od LEFT JOIN tblBuyerDetails bd ON od.BuyerID=bd.BuyerId LEFT JOIN tblBranchOrder bo ON od.OrderID=bo.OrderId WHERE od.[Delete]=0 ORDER BY od.CreatedDate DESC";
+            else
+                sql = "SELECT od.OrderID,PurchaseOrderID,od.OrderStatus,OrderDate,PurchaseOrderPath,BuyerCompanyName,od.BuyerID,bo.BranchPOID,bo.BranchOrderId ,bo.OrderStatus AS 'bOrderStatus' ,od.modifieddate AS 'ClosedDate',od.ApprovedBy,bo.BranchOrderDate,bo.BranchOrderPath FROM tblOrderDetails od LEFT JOIN tblBuyerDetails bd ON od.BuyerID=bd.BuyerId LEFT JOIN tblBranchOrder bo ON od.OrderID=bo.OrderId WHERE od.[Delete]=0 AND od.OrderStatus='" + OrderStatus + "' ORDER BY od.CreatedDate DESC";
+
+            //if(OrderStatus.ToLower()=="new")
+            //        sql+=" AND od.OrderStatus='NEW'";
+            //if (OrderStatus.ToLower() == "close")
+            //    sql += " AND od.OrderStatus='close' AND od.Approval=1";
+            //if (OrderStatus.ToLower() != "new" && OrderStatus.ToLower() != "close")
+            //    sql += " AND od.Approval = 1 AND od.OrderStatus <>'NEW' AND od.OrderStatus <>'close' ";
+
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable(sql);
+        }
+        public static DataTable  OrderList(int Orderid)
+        {
+            string sql = "SELECT od.OrderID,PurchaseOrderID,od.OrderStatus,OrderDate,PurchaseOrderPath, od.Comments AS 'O_Comments',BuyerCompanyName,od.BuyerID,bo.BranchPOID,bo.BranchOrderId ,bo.OrderStatus AS 'bOrderStatus' , bo.Comments AS 'B_Comments',od.modifieddate AS 'ClosedDate',od.ApprovedBy,bo.BranchOrderDate,bo.BranchOrderPath,b.Bname , b.BranchCode ,bd.CAddress ,bd.CCity,bd.CState,bd.CCountry,bd.CPincode,bd.CContactPerson,bd.CContactPhoneNo,bd.NAddress,bd.NCity,bd.NState,bd.NCountry,bd.NPincode,bd.NContactPerson,bd.NContactPhoneNo,bd.TINNumber, od.PriceTermsID, bpd.FOB_India, bpd.CNF_Sea_By, bpd.CNF_AIR_By_EuropeandEastUSA,bpd.CNF_AIR_By_WEST_USA, bpd.CIF_Sea_By,bpd.CIF_Air_By_EuropeandEastUSA,bpd.CIF_AIR_By_WEST_USA,FORDestination,Exworks,btd.*, od.PaymentTerms, od.FreightTerms, od.DestinationCountry, od.DestinationPort  FROM tblOrderDetails od LEFT JOIN tblBuyerDetails bd ON od.BuyerID=bd.BuyerId LEFT JOIN tblBranchOrder bo ON od.OrderID=bo.OrderId LEFT JOIN tblBranchDetails b ON od.BranchID=b.BranchId LEFT JOIN tblBuyerPriceTermsDetails bpd ON od.PriceTermsID = bpd.BuyerPriceID LEFT JOIN tblBuyerTransportDetails btd ON od.TransportID = btd.BuyerTransportID  WHERE od.[Delete] = 0 AND od.OrderID = " + Orderid;
+            
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable(sql);
+        }
+        public static DataTable OrderbyBuyer(string BuyerID)
+        {
+            //string sql = "SELECT * FROM tblOrderDetails WHERE BuyerID = '" + BuyerID + "' ORDER BY CreatedDate DESC";
+            string sql = "SELECT od.OrderID,PurchaseOrderID,od.OrderStatus,OrderDate,PurchaseOrderPath,BuyerCompanyName,od.BuyerID,bo.BranchPOID,bo.BranchOrderId ,bo.OrderStatus AS 'bOrderStatus' ,od.modifieddate AS 'ClosedDate',od.ApprovedBy,bo.BranchOrderDate,bo.BranchOrderPath FROM tblOrderDetails od LEFT JOIN tblBuyerDetails bd ON od.BuyerID=bd.BuyerId LEFT JOIN tblBranchOrder bo ON od.OrderID=bo.OrderId WHERE od.[Delete]=0 AND od.BuyerID = '" + BuyerID + "' ORDER BY od.OrderID DESC ";
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable(sql);
+        }
+        public static DataTable OrderProductList(int OrderID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            //return mdbh.ExecuteDataTable("SELECT OrderProductID,op.ProductID,TotalPrice,Quantity,Packing25,Packing180,ProductName, ct.BatchID, bop.GrossQuantity  FROM tblOrderProducts op LEFT JOIN tblProductDetails pd ON op.ProductID=pd.ProductId LEFT JOIN tblBranchOrder bo ON op.OrderID = bo.OrderID LEFT JOIN tblBranchOrderProduct bop ON bo.BranchOrderID = bop.BranchOrderID  LEFT JOIN tblCollection c ON op.OrderID = c.OrderID AND bo.BranchOrderID = c.BranchOrderID LEFT JOIN tblCollectionTransaction ct ON c.CollectionID = ct.CollectionID  WHERE op.OrderID=" + OrderID + " AND op.[Delete]=0");
+            return mdbh.ExecuteDataTable("SELECT OrderProductID,op.ProductID,TotalPrice,Quantity,Packing25,Packing180,ProductName, ct.BatchID, bop.GrossQuantity,(Packing25+Packing180) AS 'TotalDrums'  FROM tblOrderProducts op LEFT JOIN tblProductDetails pd ON op.ProductID=pd.ProductId LEFT JOIN tblBranchOrder bo ON op.OrderID = bo.OrderID LEFT JOIN tblBranchOrderProduct bop ON bo.BranchOrderID = bop.BranchOrderID AND op.ProductID=bop.ProductID  LEFT JOIN tblCollection c ON op.OrderID = c.OrderID AND bo.BranchOrderID = c.BranchOrderID LEFT JOIN tblCollectionTransaction ct ON c.CollectionID = ct.CollectionID  AND op.ProductID = ct.ProductID WHERE op.OrderID=" + OrderID + " AND op.[Delete]=0 GROUP BY OrderProductID,op.ProductID,TotalPrice,Quantity,Packing25,Packing180,ProductName, ct.BatchID, bop.GrossQuantity  ");
+        }
+        public static DataTable OrderProductList(string POID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT OrderProductID,op.ProductID,TotalPrice,Quantity,Packing25,Packing180,ProductName, ct.BatchID, bop.GrossQuantity,(Packing25+Packing180) AS 'TotalDrums'  , od.OrderID, od.PurchaseOrderID, od.OrderDate , bd.BuyerCompanyName, (op.TotalPrice / op.Quantity ) AS 'Price'  FROM tblOrderDetails od LEFT JOIN tblOrderProducts op ON od.OrderID = op.OrderID LEFT JOIN tblProductDetails pd ON op.ProductID=pd.ProductId LEFT JOIN tblBranchOrder bo ON op.OrderID = bo.OrderID LEFT JOIN tblBranchOrderProduct bop ON bo.BranchOrderID = bop.BranchOrderID AND op.ProductID=bop.ProductID  LEFT JOIN tblCollection c ON op.OrderID = c.OrderID AND bo.BranchOrderID = c.BranchOrderID LEFT JOIN tblCollectionTransaction ct ON c.CollectionID = ct.CollectionID  AND op.ProductID = ct.ProductID LEFT JOIN tblBuyerDetails bd ON od.BuyerID = bd.BuyerId WHERE od.PurchaseOrderID = '" + POID + "' AND op.[Delete]=0  GROUP BY OrderProductID,op.ProductID,TotalPrice,Quantity,Packing25,Packing180,ProductName, ct.BatchID, bop.GrossQuantity  , od.OrderID, od.PurchaseOrderID, od.OrderDate , bd.BuyerCompanyName");
+        }
+        public static DataTable OrderProductList(int OrderID,int BranchOrderID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT OrderProductID,op.ProductID,TotalPrice,Quantity,Packing25,Packing180,ProductName, ct.BatchID, bop.GrossQuantity  FROM tblOrderProducts op LEFT JOIN tblProductDetails pd ON op.ProductID=pd.ProductId LEFT JOIN tblBranchOrder bo ON op.OrderID = bo.OrderID LEFT JOIN tblBranchOrderProduct bop ON bo.BranchOrderID = bop.BranchOrderID AND pd.ProductId = bop.ProductID LEFT JOIN tblCollection c ON op.OrderID = c.OrderID AND bo.BranchOrderID = c.BranchOrderID LEFT JOIN tblCollectionTransaction ct ON c.CollectionID = ct.CollectionID AND op.ProductID = ct.ProductID  WHERE op.OrderID= " + OrderID + " AND op.[Delete]=0 AND bo.BranchOrderID = " + BranchOrderID + " GROUP BY OrderProductID,op.ProductID,TotalPrice,Quantity,Packing25,Packing180,ProductName, ct.BatchID, bop.GrossQuantity");
+        }
+        public static DataTable BranchOrderList(string OrderStatus)
+        {
+            string sql = string.Empty;
+            if (OrderStatus.Trim().ToUpper() == "ALL")
+                sql = "SELECT OrderId,BranchPOID,OrderStatus,BranchOrderDate,BranchOrderPath,BranchOrderID,OrderTo,OrderToID FROM tblBranchOrder WHERE [Delete]=0 ORDER BY BranchOrderDate DESC";
+            else
+                sql = "SELECT OrderId,BranchPOID,OrderStatus,BranchOrderDate,BranchOrderPath,BranchOrderID,OrderTo,OrderToID FROM tblBranchOrder WHERE [Delete]=0 AND OrderStatus='" + OrderStatus + "' ORDER BY BranchOrderDate DESC";
+            //if (OrderStatus.ToLower() == "new")
+            //    sql += " AND OrderStatus='NEW'";
+            //if (OrderStatus.ToLower() != "new" && OrderStatus.ToLower() != "close")
+            //    sql += " AND OrderStatus <> 'NEW' AND OrderStatus <> 'CLOSE'";
+            //if (OrderStatus.ToLower() == "close")
+            //    sql += " AND OrderStatus='CLOSE'";
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable(sql);
+        }
+        //public static DataTable OrderProductList(int OrderID)
+        //{
+        //    MudarDBHelper mdbh = MudarDBHelper.Instance;
+        //    return mdbh.ExecuteDataTable("SELECT OrderProductID,op.ProductID,TotalPrice,Quantity,Packing25,Packing180,ProductName FROM tblOrderProducts op LEFT JOIN tblProductDetails pd ON op.ProductID=pd.ProductId WHERE OrderID=" + OrderID + " AND op.[Delete]=0");
+        //}
+        public static DataTable OrderTrack(string OrderID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("select OrderID,PurchaseOrderID,OrderStatus,Comments, OrderDate, bd.BuyerCompanyName, PurchaseOrderPath from tblOrderDetails od, tblBuyerDetails bd where od.BuyerID = bd.BuyerId AND (cast(OrderID as nvarchar) = '" + OrderID + "' OR PurchaseOrderID = '" + OrderID + "')");
+        }
+        public static DataTable OrderProduct_BPO(int OrderID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT op.*,pd.ProductName, pp.PriceMB, pp.POPriceMB FROM dbo.tblOrderProducts op LEFT JOIN tblOrderDetails od ON op.OrderID = od.OrderID LEFT JOIN tblProductDetails pd ON op.ProductID = pd.ProductId LEFT JOIN tblProductPrice pp ON op.ProductID = pp.ProductId LEFT JOIN tblPriceHistory ph ON pp.PriceHistoryId = ph.PriceHistoryId WHERE od.OrderID = " + OrderID + " 	AND ph.PriceHistoryId = (SELECT top 1 tph.PriceHistoryId FROM tblPriceHistory tph WHERE tph.CreateDate <= od.OrderDate ORDER BY tph.CreateDate DESC )");
+        }
+        public static bool BranchOrderInsert(int OrderID, decimal TotalAmount, string OrderStatus, string BranchPOID, DateTime BranchOrderDate, string CreatedBy, string ModifiedBy, string Comments, int TypeOfOperation, ref int ReturnBranchOrderID, int OrderTo, string OrderToID)
+        {
+            bool Result = false;
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+            Params.Add(mdbh.AddParameter("OrderID", SqlDbType.Int, OrderID));
+            Params.Add(mdbh.AddParameter("TotalAmount", SqlDbType.Decimal, TotalAmount));
+            Params.Add(mdbh.AddParameter("OrderStatus", SqlDbType.NVarChar, OrderStatus));
+            Params.Add(mdbh.AddParameter("BranchPOID", SqlDbType.NVarChar, BranchPOID));
+            Params.Add(mdbh.AddParameter("BranchOrderDate", SqlDbType.DateTime, BranchOrderDate));
+            Params.Add(mdbh.AddParameter("CreatedBy", SqlDbType.NVarChar, CreatedBy));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("Comments", SqlDbType.NVarChar, Comments));
+            Params.Add(mdbh.AddParameter("TypeOfOperation", SqlDbType.Int, TypeOfOperation));
+            Params.Add(mdbh.AddParameter("OrderTo", SqlDbType.Int, OrderTo));
+            Params.Add(mdbh.AddParameter("OrderToID", SqlDbType.UniqueIdentifier, new Guid(OrderToID)));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, Result, Param_Directions.Param_Out));
+            Params.Add(mdbh.AddParameter("ReturnBranchOrderID", SqlDbType.Int, ReturnBranchOrderID, Param_Directions.Param_Out));
+            try
+            {
+                List<string> output = new List<string>();
+
+                mdbh.ExecuteNonQuery(sp.sp_BranchOrderDetails_INSandUPDandDEL, Params, ref output);
+                if (output.Count >= 2)
+                {
+                    Result = Convert.ToBoolean(output[0]);
+                    ReturnBranchOrderID = Convert.ToInt32(output[1]);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Result;
+        }
+        public static bool BranchOrderProduct_INSandUPDandDEL(int BranchOrderID, int ProductID, decimal NetQuantity, decimal GrossQuantity, decimal Amount, string CreatedBy, string ModifiedBy, int TypeOfOperation)
+        {
+            bool Result = false;
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+
+            Params.Add(mdbh.AddParameter("BranchOrderID", SqlDbType.Int, BranchOrderID));
+            Params.Add(mdbh.AddParameter("ProductID", SqlDbType.Int, ProductID));
+            Params.Add(mdbh.AddParameter("NetQuantity", SqlDbType.Decimal, NetQuantity));
+            Params.Add(mdbh.AddParameter("Amount", SqlDbType.Money, Amount));
+            Params.Add(mdbh.AddParameter("CreatedBy", SqlDbType.NVarChar, CreatedBy));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("TypeOfOperation", SqlDbType.Int, TypeOfOperation));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, Result, Param_Directions.Param_Out));
+
+            try
+            {
+                Result =(bool)mdbh.ExecuteNonQuery(sp.sp_BranchOrderProduct_INSandUPDandDEL, Params);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Result;
+        }
+        public static DataTable Order_Buyer_Branch_Details(int OrderID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT op.*,bud.*, bpt.*,bpd.*,pd.ProductName,bo.*,bop.* FROM tblOrderDetails od LEFT JOIN tblOrderProducts op ON od.OrderID = op.OrderID LEFT JOIN tblProductDetails pd ON pd.ProductId=op.ProductID LEFT JOIN tblBuyerDetails bud ON bud.BuyerId = od.BuyerID LEFT JOIN tblBuyerPriceTermsDetails bpt ON bpt.BuyerId = od.BuyerID LEFT JOIN tblBuyerTransportDetails bpd ON bpd.BuyerId = od.BuyerID LEFT JOIN tblBranchOrder bo ON od.OrderID = bo.OrderID  LEFT JOIN tblBranchOrderProduct bop ON bop.BranchOrderID=bo.BranchOrderID and bop.ProductID=op.ProductID WHERE od.OrderID='" + OrderID + "' AND od.[Delete] = 0");
+        }
+        public static DataTable CollectedProductDetails(int OrderID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT bop.*, fd.FarmerId,fd.FarmerCode,fd.FirstName,ffd.FarmID,ffd.AreaCode,pld.PlantationId, (pld.FirstLotNos +';'+ pld.SecondLotNos) AS 'Lot_No', pld.TotalProductQuantity FROM tblBranchOrder bo LEFT JOIN tblOrderDetails od ON bo.OrderID = od.OrderID LEFT JOIN tblBranchOrderProduct bop ON bo.BranchOrderID = bop.BranchOrderID LEFT JOIN tblPlantationDetails pld ON bop.ProductID = pld.ProductId LEFT JOIN tblFarmerFarmDetails ffd ON pld.FarmID = ffd.FarmID LEFT JOIN tblFarmerDetails fd ON pld.FarmerId = fd.FarmerId WHERE od.OrderID='" + OrderID + "'  AND pld.TotalProductQuantity>0");
+        }
+        public static DataTable CollectedProductDetails_Product(int Product)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT  fd.FarmerId,	fd.FarmerCode,	fd.FirstName,	ffd.FarmID,	ffd.AreaCode,		pld.PlantationId, 	(pld.FirstLotNos +';'+ pld.SecondLotNos) AS 'Lot_No', 		pld.TotalProductQuantity, ISNULL(pld.SoldTotalQty, 0) AS 'SoldTotalQty',		(pld.TotalProductQuantity-ISNULL(pld.SoldTotalQty, 0)) AS 'Avaliable' FROM tblProductDetails pd 	LEFT JOIN tblPlantationDetails pld ON pd.ProductID = pld.ProductId 	LEFT JOIN tblFarmerFarmDetails ffd ON pld.FarmID = ffd.FarmID 	LEFT JOIN tblFarmerDetails fd ON pld.FarmerId = fd.FarmerId 	WHERE  pd.ProductID ="+Product+" AND pld.TotalProductQuantity>0 ");
+        }
+        public static DataTable CollectedProductDetails(int OrderID, int ProductID, string BranchOrderID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT pld.FirstDistillationDate, pld.SecondDistillationDate, bop.*, fd.FarmerId,fd.FarmerCode,fd.FirstName,ffd.FarmID,ffd.AreaCode,	pld.PlantationId, (pld.FirstLotNos) AS 'Lot_No', "
+    + " (pld.TotalProductQuantity-ISNULL(pld.SecondProductQuantity, 0)) AS 'TotalProductQuantity' , ISNULL(pld.SoldTotalQty, 0) AS 'SoldTotalQty',	(pld.TotalProductQuantity-ISNULL(pld.SoldTotalQty, 0)) AS 'Avaliable'"
+    + " FROM tblBranchOrder bo LEFT JOIN tblOrderDetails od ON bo.OrderID = od.OrderID "
+    + " LEFT JOIN tblBranchOrderProduct bop ON bo.BranchOrderID = bop.BranchOrderID "
+    + " LEFT JOIN tblPlantationDetails pld ON bop.ProductID = pld.ProductId "
+    + " LEFT JOIN tblFarmerFarmDetails ffd ON pld.FarmID = ffd.FarmID "
+    + " LEFT JOIN tblFarmerDetails fd ON pld.FarmerId = fd.FarmerId "
+    + " LEFT JOIN tblProductDetails pd ON pd.ProductId = bop.ProductID "
+    + " WHERE od.OrderID='"+OrderID+"' AND bop.ProductID ='"+ProductID+"' AND pld.TotalProductQuantity>0 AND bop.BranchOrderID='"+BranchOrderID+"' "
+    + " AND pld.FirstDistillationDate <= (GETDATE()-1)  AND pld.SecondDistillationDate > (GETDATE()-1) AND (pld.TotalProductQuantity-ISNULL(pld.SoldTotalQty, 0))>0 "
++ " UNION "
++ " SELECT pld.FirstDistillationDate, pld.SecondDistillationDate, bop.*, fd.FarmerId,fd.FarmerCode,fd.FirstName,ffd.FarmID,ffd.AreaCode,	pld.PlantationId, (pld.FirstLotNos +';'+ pld.SecondLotNos) AS 'Lot_No', "
+    + " pld.TotalProductQuantity, ISNULL(pld.SoldTotalQty, 0) AS 'SoldTotalQty',	(pld.TotalProductQuantity-ISNULL(pld.SoldTotalQty, 0)) AS 'Avaliable' "
+    + " FROM tblBranchOrder bo LEFT JOIN tblOrderDetails od ON bo.OrderID = od.OrderID "
+    + " LEFT JOIN tblBranchOrderProduct bop ON bo.BranchOrderID = bop.BranchOrderID "
+    + " LEFT JOIN tblPlantationDetails pld ON bop.ProductID = pld.ProductId "
+    + " LEFT JOIN tblFarmerFarmDetails ffd ON pld.FarmID = ffd.FarmID "
+    + " LEFT JOIN tblFarmerDetails fd ON pld.FarmerId = fd.FarmerId "
+    + " LEFT JOIN tblProductDetails pd ON pd.ProductId = bop.ProductID "
+    + " WHERE od.OrderID='"+OrderID+"' AND bop.ProductID ='"+ProductID+"' AND pld.TotalProductQuantity>0 AND bop.BranchOrderID='"+BranchOrderID+"' "
+    + " AND pld.SecondDistillationDate <= (GETDATE()-1) AND (pld.TotalProductQuantity-ISNULL(pld.SoldTotalQty, 0))>0 ");
+            //return mdbh.ExecuteDataTable("SELECT bop.*, fd.FarmerId,fd.FarmerCode,fd.FirstName,ffd.FarmID,ffd.AreaCode,	pld.PlantationId, (pld.FirstLotNos +';'+ pld.SecondLotNos) AS 'Lot_No', 	pld.TotalProductQuantity, ISNULL(pld.SoldTotalQty, 0) AS 'SoldTotalQty',	(pld.TotalProductQuantity-ISNULL(pld.SoldTotalQty, 0)) AS 'Avaliable' FROM tblBranchOrder bo LEFT JOIN tblOrderDetails od ON bo.OrderID = od.OrderID LEFT JOIN tblBranchOrderProduct bop ON bo.BranchOrderID = bop.BranchOrderID LEFT JOIN tblPlantationDetails pld ON bop.ProductID = pld.ProductId LEFT JOIN tblFarmerFarmDetails ffd ON pld.FarmID = ffd.FarmID LEFT JOIN tblFarmerDetails fd ON pld.FarmerId = fd.FarmerId LEFT JOIN tblProductDetails pd ON pd.ProductId = bop.ProductID WHERE od.OrderID='" + OrderID + "' AND bop.ProductID ='" + ProductID + "' AND pld.TotalProductQuantity>0 AND bop.BranchOrderID='" + BranchOrderID + "'");
+        }
+        public static DataTable CollectedProduct(int OrderID, int ProductID, int BranchOrderID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT c.*,ct.* FROM tblCollection c LEFT JOIN tblCollectionTransaction ct ON c.CollectionID = ct.CollectionID WHERE c.OrderID = " + OrderID + " AND c.BranchOrderID = " + BranchOrderID + " AND ct.ProductID = " + ProductID);
+        }
+        public static DataTable CollectedProduct(int ProductID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT c.*,ct.* FROM tblCollection c LEFT JOIN tblCollectionTransaction ct ON c.CollectionID = ct.CollectionID WHERE ct.ProductID = " + ProductID);
+        }
+        public static DataSet ReturnBatchList(string BatchID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataSet("SELECT * FROM tblCollectionTransaction WHERE BatchID LIKE '" + BatchID + "%';SELECT * FROM [tblPreOrderCollectionTransaction] WHERE BatchID LIKE '" + BatchID + "%';");
+        }
+        public static bool ProductsCollection_Insert(ref int CollectionID, int OrderID, int BranchOrderID, string CreatedBy, string ModifiedBy, int TypeOfOperation, bool IsPreOrder)
+        {
+            bool Result = false;
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+            Params.Add(mdbh.AddParameter("OrderID", SqlDbType.Int, OrderID));
+            Params.Add(mdbh.AddParameter("BranchOrderID", SqlDbType.Int, BranchOrderID));
+            Params.Add(mdbh.AddParameter("CollectionID", SqlDbType.Int, CollectionID, Param_Directions.Param_Out));
+            Params.Add(mdbh.AddParameter("CreatedBy", SqlDbType.NVarChar, CreatedBy));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("TypeOfOperation", SqlDbType.Int, TypeOfOperation));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, Result, Param_Directions.Param_Out));
+            Params.Add(mdbh.AddParameter("IsPreOrder", SqlDbType.Bit, IsPreOrder));
+            try
+            {
+                List<string> output = new List<string>();
+
+                mdbh.ExecuteNonQuery(sp.sp_tblCollection_INSandUPDandDEL, Params, ref output);
+                if (output.Count >= 2)
+                {
+                    Result = Convert.ToBoolean(output[1]);
+                    CollectionID = Convert.ToInt32(output[0]);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Result; 
+        }
+        public static bool ProductsCollectionTran_Insert(string BatchID, int CollectionID, int ProductId, string FarmerId, string OtherFarmerNames, string OtherFarmerArea, string OtherFarmerQty, string CollectedQty, string FarmId, string LotNumber, string CreatedBy, string ModifiedBy, int TypeOfOperation, string PlantationID)
+        {
+            bool Result = false;
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+            Params.Add(mdbh.AddParameter("BatchID", SqlDbType.NVarChar, BatchID));
+            Params.Add(mdbh.AddParameter("CollectionID", SqlDbType.Int, CollectionID));
+            Params.Add(mdbh.AddParameter("ProductId", SqlDbType.Int, ProductId));
+            Params.Add(mdbh.AddParameter("FarmerId ", SqlDbType.NVarChar, FarmerId));
+            Params.Add(mdbh.AddParameter("OtherFarmerNames", SqlDbType.NVarChar, OtherFarmerNames));
+            Params.Add(mdbh.AddParameter("OtherFarmerArea", SqlDbType.NVarChar, OtherFarmerArea));
+            Params.Add(mdbh.AddParameter("OtherFarmerQty", SqlDbType.NVarChar, OtherFarmerQty));
+            Params.Add(mdbh.AddParameter("CollectionQty ", SqlDbType.NVarChar, CollectedQty));
+            Params.Add(mdbh.AddParameter("PlantationID ", SqlDbType.NVarChar, PlantationID));
+            Params.Add(mdbh.AddParameter("FarmId", SqlDbType.NVarChar, FarmId));
+            Params.Add(mdbh.AddParameter("LotNumber", SqlDbType.NVarChar,LotNumber));
+            Params.Add(mdbh.AddParameter("CreatedBy", SqlDbType.NVarChar, CreatedBy));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("TypeOfOperation", SqlDbType.Int, TypeOfOperation));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, Result, Param_Directions.Param_Out));
+            try
+            {
+                Result = (bool)mdbh.ExecuteNonQuery(sp.sp_tblCollectionTransaction_INSandUPDandDEL, Params);
+                
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Result; 
+        }
+        public static DataTable PackingDetails(int OrderID, int BranchOrderID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            //return mdbh.ExecuteDataTable("SELECT od.OrderID, odp.ProductID, odp.Packing25, odp.Packing180, bop.NetQuantity, bop.GrossQuantity, ct.BatchID, ct.Lotnumber, pd.ProductName, bo.BranchOrderID, ct.CollectionID FROM dbo.tblOrderDetails od  LEFT JOIN dbo.tblOrderProducts odp ON od.OrderID = odp.OrderID LEFT JOIN dbo.tblBranchOrder bo ON od.OrderID = bo.OrderID LEFT JOIN dbo.tblBranchOrderProduct bop ON bo.BranchOrderID = bop.BranchOrderID AND odp.ProductID = bop.ProductID LEFT JOIN dbo.tblCollection c ON od.OrderID = c.OrderID LEFT JOIN dbo.tblCollectionTransaction ct ON c.CollectionID = ct.CollectionID  LEFT JOIN dbo.tblProductDetails pd ON odp.ProductID = pd.ProductId  WHERE od.OrderID = '" + OrderID + "' AND bo.BranchOrderID = '" + BranchOrderID + "' GROUP BY od.OrderID, odp.ProductID, odp.Packing25, odp.Packing180, bop.NetQuantity, bop.GrossQuantity, ct.BatchID, ct.Lotnumber, pd.ProductName, bo.BranchOrderID, ct.CollectionID ");
+            return mdbh.ExecuteDataTable("SELECT od.OrderID, odp.ProductID, odp.Packing25, odp.Packing180, bop.NetQuantity, CASE WHEN bop.GrossQuantity IS NULL OR bop.GrossQuantity=0 THEN  bop.GrossQuantity+(odp.Packing25*3)+(odp.Packing180*21) +bop.NetQuantity ELSE bop.GrossQuantity END as GrossQuantity, c.CollectionID, ct.BatchID, ct.Lotnumber, pd.ProductName, bo.BranchOrderID FROM dbo.tblOrderDetails od  LEFT JOIN dbo.tblOrderProducts odp ON od.OrderID = odp.OrderID LEFT JOIN dbo.tblBranchOrder bo ON od.OrderID = bo.OrderID LEFT JOIN dbo.tblBranchOrderProduct bop ON bo.BranchOrderID = bop.BranchOrderID AND odp.ProductID = bop.ProductID LEFT JOIN dbo.tblCollection c ON od.OrderID = c.OrderID AND bo.BranchOrderID = c.BranchOrderID LEFT JOIN dbo.tblCollectionTransaction ct ON c.CollectionID = ct.CollectionID  AND odp.ProductID = ct.ProductID LEFT JOIN dbo.tblProductDetails pd ON odp.ProductID = pd.ProductId  WHERE od.OrderID = '" + OrderID + "' AND bo.BranchOrderID = '" + BranchOrderID + "' GROUP BY od.OrderID, odp.ProductID, odp.Packing25, odp.Packing180, bop.NetQuantity, bop.GrossQuantity, ct.BatchID, ct.Lotnumber, pd.ProductName, bo.BranchOrderID, c.CollectionID ");
+        }
+        public static bool PackingDetailsUpdate(int OrderID, int ProductID, int BranchOrderID, decimal GrossQty, int Packing25, int Packing180, string ModifiedBy, int TypeOfOperation)
+        {
+            bool Result = false;
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+            Params.Add(mdbh.AddParameter("OrderID", SqlDbType.Int, OrderID));
+            Params.Add(mdbh.AddParameter("ProductID", SqlDbType.Int, ProductID));
+            Params.Add(mdbh.AddParameter("BranchOrderID", SqlDbType.Int, BranchOrderID));
+            Params.Add(mdbh.AddParameter("GrossQty", SqlDbType.Decimal, GrossQty));
+            Params.Add(mdbh.AddParameter("Packing25", SqlDbType.Int, Packing25));
+            Params.Add(mdbh.AddParameter("Packing180", SqlDbType.Int, Packing180));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("TypeOfOperation", SqlDbType.Int, TypeOfOperation));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, Result, Param_Directions.Param_Out));
+            try
+            {
+                Result = (bool)mdbh.ExecuteNonQuery(sp.sp_packingDetails_UPD, Params);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Result;
+        }
+
+        public static DataTable Convert_NumberToWord(decimal TotalValue)
+        {
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+            Params.Add(mdbh.AddParameter("Number", SqlDbType.Decimal, TotalValue));
+            return mdbh.ExecuteDataTable(sp.SP_udf_Num_ToWords, Params, "Totalvalues");
+        }
+        public static DataTable AmtinWords(decimal TotalValue)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            //return mdbh.ExecuteDataTable("SELECT od.OrderID, odp.ProductID, odp.Packing25, odp.Packing180, bop.NetQuantity, bop.GrossQuantity, ct.BatchID, ct.Lotnumber, pd.ProductName, bo.BranchOrderID, ct.CollectionID FROM dbo.tblOrderDetails od  LEFT JOIN dbo.tblOrderProducts odp ON od.OrderID = odp.OrderID LEFT JOIN dbo.tblBranchOrder bo ON od.OrderID = bo.OrderID LEFT JOIN dbo.tblBranchOrderProduct bop ON bo.BranchOrderID = bop.BranchOrderID AND odp.ProductID = bop.ProductID LEFT JOIN dbo.tblCollection c ON od.OrderID = c.OrderID LEFT JOIN dbo.tblCollectionTransaction ct ON c.CollectionID = ct.CollectionID  LEFT JOIN dbo.tblProductDetails pd ON odp.ProductID = pd.ProductId  WHERE od.OrderID = '" + OrderID + "' AND bo.BranchOrderID = '" + BranchOrderID + "' GROUP BY od.OrderID, odp.ProductID, odp.Packing25, odp.Packing180, bop.NetQuantity, bop.GrossQuantity, ct.BatchID, ct.Lotnumber, pd.ProductName, bo.BranchOrderID, ct.CollectionID ");
+            return mdbh.ExecuteDataTable("select value = dbo.fnMoneyToEnglish ('" +TotalValue+ "')");
+        }
+        public static bool OrderSampleDetails(int SampleID, string BuyerID, DateTime SampleDate, string Status, string CourierName, DateTime CourierDate, string ReceivedDate, string CourierAccountNumber, string CreatedBy, string ModifiedBy, ref int ReturnSampleID, int TypeOfOperation)
+        {
+            bool result = false;
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            MudarSPName sp = new MudarSPName();
+            List<SqlParameter> Params = new List<SqlParameter>();
+            Params.Add(mdbh.AddParameter("SampleID", SqlDbType.Int, SampleID));
+            Params.Add(mdbh.AddParameter("BuyerID", SqlDbType.UniqueIdentifier, new Guid(BuyerID)));
+            Params.Add(mdbh.AddParameter("SampleDate", SqlDbType.DateTime, SampleDate));
+            Params.Add(mdbh.AddParameter("Status", SqlDbType.NVarChar, Status));
+            Params.Add(mdbh.AddParameter("CourierName", SqlDbType.NVarChar, CourierName));
+            Params.Add(mdbh.AddParameter("CourierDate", SqlDbType.DateTime, CourierDate));
+            Params.Add(mdbh.AddParameter("ReceivedDate", SqlDbType.NVarChar, ReceivedDate));
+            Params.Add(mdbh.AddParameter("CourierAccountNumber", SqlDbType.NVarChar, CourierAccountNumber));
+            Params.Add(mdbh.AddParameter("CreatedBy", SqlDbType.NVarChar, CreatedBy));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("Returnvalue", SqlDbType.Bit, result, Param_Directions.Param_Out));
+            Params.Add(mdbh.AddParameter("ReturnSampleID", SqlDbType.Int, ReturnSampleID, Param_Directions.Param_Out));
+            Params.Add(mdbh.AddParameter("TypeOfOperation", SqlDbType.Int, TypeOfOperation));
+            try
+            {
+                List<string> output = new List<string>();
+
+                mdbh.ExecuteNonQuery(sp.sp_OrderSampleDetails_INSandUPD, Params, ref output);
+                if (output.Count >= 2)
+                {
+                    result = Convert.ToBoolean(output[0]);
+                    ReturnSampleID = Convert.ToInt32(output[1]);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return result;
+
+        }
+        public static bool OrderSampleProductDetails(int SampleProductID, int ProductID, int SampleID, int Quantity, string CreatedBy, string ModifiedBy, int TypeOfOperation)
+        {
+            bool result = false;
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            MudarSPName sp = new MudarSPName();
+            List<SqlParameter> Params = new List<SqlParameter>();
+            Params.Add(mdbh.AddParameter("SampleProductID", SqlDbType.Int, SampleProductID));
+            Params.Add(mdbh.AddParameter("ProductID", SqlDbType.Int, ProductID));
+            Params.Add(mdbh.AddParameter("SampleID", SqlDbType.NVarChar, SampleID));
+            Params.Add(mdbh.AddParameter("Quantity", SqlDbType.NVarChar, Quantity));
+            Params.Add(mdbh.AddParameter("CreatedBy", SqlDbType.NVarChar, CreatedBy));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("TypeOfOperation", SqlDbType.Int, TypeOfOperation));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, result, Param_Directions.Param_Out));
+            try
+            {
+                result = (bool)mdbh.ExecuteNonQuery(sp.sp_OrderSampleProductDetails_INSandUPD, Params);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return result;
+        }
+        public static DataTable OrderSampleDetails(string BuyerID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT *, CASE WHEN  ReceivedDate='1900-01-01 00:00:00.000' Then '' ELSE CONVERT(varchar(10), ReceivedDate,101) END AS 'RDate' From tblOrderSample where BuyerId = '" + BuyerID + "' ");
+        }
+        public static DataTable OrderSampleProduct(int SampleID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT osp.*,pd.ProductName FROM tblOrderSampleProduct osp LEFT JOIN tblProductDetails pd ON pd.ProductId = osp.ProductID WHERE SampleID='" + SampleID + "'");
+        }
+
+        public static DataTable BranchOrderDetails(string BranchPOID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT * FROM tblBranchOrder bo LEFT JOIN tblBranchOrderProduct bop ON bo.BranchOrderID = bop.BranchOrderID LEFT JOIN tblProductDetails pd ON bop.ProductID = pd.ProductId WHERE bo.BranchPOID LIKE '" + BranchPOID + "'");
+        }
+        #region Blending
+        public static DataTable GetBliendingDetails(string OrderID, string BOrderID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            string sql = "SELECT od.OrderID, od.OrderDate, bo.BranchOrderID, bo.BranchOrderDate, c.CollectionID , prod.ProductName , (SELECT fd.FirstName +',' FROM tblFarmerDetails fd LEFT JOIN tblPlantationDetails pds ON fd.FarmerId = pds.FarmerId  WHERE CAST( pds.PlantationId AS NVARCHAR) IN (SELECT value FROM SplitDelimited(ct.PlantationID,';'))  ORDER BY fd.FirstName FOR XML PATH('') ) AS FarmerName , (SELECT fds.FarmerCode +',' FROM tblFarmerDetails fds LEFT JOIN tblPlantationDetails pds ON fds.FarmerId = pds.FarmerId  WHERE CAST( pds.PlantationId AS NVARCHAR) IN (SELECT value FROM SplitDelimited(ct.PlantationID,';'))  ORDER BY fds.FarmerCode FOR XML PATH('') ) AS FarmerCode , (SELECT ffd.AreaCode +',' FROM tblFarmerFarmDetails ffd WHERE CAST( ffd.FarmID AS NVARCHAR) IN (SELECT value FROM SplitDelimited(ct.FarmID,';'))  ORDER BY ffd.AreaCode FOR XML PATH('') ) AS PlotCode , ct.FarmID,ct.FarmerID,ct.Lotnumber, ct.CollectionQty, ct.BatchID, ct.Blending_BatchID , ct.OtherFarmersName, ct.OtherFarmerQty, ct.CollectionTransactionID , bop.NetQuantity, ct.ProductID   FROM tblOrderDetails od LEFT JOIN tblBranchOrder bo ON bo.OrderID = od.OrderID  LEFT JOIN tblCollection c ON c.OrderID = od.OrderID AND c.BranchOrderID = bo.BranchOrderID  LEFT JOIN tblCollectionTransaction ct ON ct.CollectionID = c.CollectionID LEFT JOIN tblProductDetails prod ON ct.ProductID = prod.ProductId LEFT JOIN tblBranchOrderProduct bop ON bop.BranchOrderID = bo.BranchOrderID AND bop.ProductID = prod.ProductId  WHERE od.OrderID = " + OrderID + " AND bo.BranchOrderID = " + BOrderID + "  AND od.Approval=1";
+            return mdbh.ExecuteDataTable(sql);
+        }
+        public static DataTable ReturnBBatchList(string BBatchID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT * FROM tblCollectionTransaction WHERE Blending_BatchID LIKE '" + BBatchID + "%'");
+        }
+        public static bool BlendingBatchNo(int CTID, string BBatchID, string ModifiedBy, int TypeOfOperation)
+        {
+            bool result = false;
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            MudarSPName sp = new MudarSPName();
+            List<SqlParameter> Params = new List<SqlParameter>();
+            Params.Add(mdbh.AddParameter("CollectionTransactionID", SqlDbType.Int, CTID));
+            Params.Add(mdbh.AddParameter("Blending_BatchID", SqlDbType.NVarChar, BBatchID));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("TypeOfOperation", SqlDbType.Int, TypeOfOperation));
+            try
+            {
+                mdbh.ExecuteNonQuery(sp.sp_tblCollectionTransaction_UPD, Params);
+                result = true;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return result;
+        }
+        #endregion
+
+        #region Freeze
+        public static DataTable GetFreezeDetails(string OrderID, string BOrderID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            string sql = "SELECT od.OrderID, OrderDate, op.OrderProductID, op.ProductID, op.Quantity , pd.ProductName, f.FreezeID, f.FBatchID, bo.BranchOrderID  FROM tblOrderDetails od LEFT JOIN tblOrderProducts op ON op.OrderID = od.OrderID  LEFT JOIN tblBranchOrder bo ON bo.OrderID = od.OrderID  LEFT JOIN tblProductDetails pd ON pd.ProductId = op.ProductID  LEFT JOIN tblFreeze f ON f.OrderID = od.OrderID  AND f.ProductId = op.ProductID   WHERE od.OrderID = " + OrderID + " AND bo.BranchOrderID = " + BOrderID;
+            return mdbh.ExecuteDataTable(sql);
+        }
+        public static DataSet GetFreezeTran(string FID, string ProductID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            string sql = "SELECT * FROM tblFreeze WHERE FreezeID = " + FID + " SELECT * FROM tblFreezeTransaction WHERE FreezeID = " + FID + " AND ProductID = " + ProductID;
+            return mdbh.ExecuteDataSet(sql);
+        }
+        public static DataTable ReturnFBatchList(string FBatchID)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT * FROM  tblFreeze WHERE FBatchID LIKE '" + FBatchID + "%'");
+        }
+        public static bool Freeze_Insert(int OrderID, int BranchOrderID, string CreatedBy, string ModifiedBy, int Quntatiy, int ProductID, string FBatchID, int TypeOfOperation)
+        {
+            bool Result = false;
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+            Params.Add(mdbh.AddParameter("OrderID", SqlDbType.Int, OrderID));
+            Params.Add(mdbh.AddParameter("BranchOrderID", SqlDbType.Int, BranchOrderID));
+            Params.Add(mdbh.AddParameter("CreatedBy", SqlDbType.NVarChar, CreatedBy));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("FBatchID", SqlDbType.NVarChar, FBatchID));
+            Params.Add(mdbh.AddParameter("TypeOfOperation", SqlDbType.Int, TypeOfOperation));
+            Params.Add(mdbh.AddParameter("ProductID", SqlDbType.Int, ProductID));
+            Params.Add(mdbh.AddParameter("Quntatiy", SqlDbType.Int, Quntatiy));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, Result, Param_Directions.Param_Out));
+            try
+            {
+                Result = (bool)mdbh.ExecuteNonQuery(sp.sp_tblFreeze_INSandUPDandDEL, Params);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Result;
+        }
+        public static bool FreezeTran_INSandUPDandDEL(int FreezeTransactionID, int FreezeID, int ProductID, string FreezeProductBatchID, string FreezeProductName, string FreezeQuantity, string CreatedBY, string ModifiedBy, int TypeOfOperation)
+        {
+            bool Result = false;
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+            Params.Add(mdbh.AddParameter("FreezeTransactionID", SqlDbType.Int, FreezeTransactionID));
+            Params.Add(mdbh.AddParameter("FreezeID", SqlDbType.Int, FreezeID));
+            Params.Add(mdbh.AddParameter("ProductID", SqlDbType.Int, ProductID));
+            Params.Add(mdbh.AddParameter("FreezeProductBatchID", SqlDbType.NVarChar, FreezeProductBatchID));
+            Params.Add(mdbh.AddParameter("FreezeProductName", SqlDbType.NVarChar, FreezeProductName));
+            Params.Add(mdbh.AddParameter("FreezeQuantity", SqlDbType.NVarChar, FreezeQuantity));
+            Params.Add(mdbh.AddParameter("CreatedBY", SqlDbType.NVarChar, CreatedBY));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("TypeOfOperation", SqlDbType.Int, TypeOfOperation));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, Result, Param_Directions.Param_Out));
+            try
+            {
+                Result = (bool)mdbh.ExecuteNonQuery(sp.sp_tblFreezeTransaction_INSandUPDandDEL, Params);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Result;
+        }
+        #endregion
+
+        #region Pre Order
+        public static bool ProductsPreorderCollectionTran_Insert(string BatchID, int ProductId, string FarmerId, string OtherFarmerNames, string OtherFarmerArea, string OtherFarmerQty, string CollectedQty, string FarmId, string LotNumber, string CreatedBy, string ModifiedBy, int TypeOfOperation, string PlantationID, int TotalQty, int AvaliableQty, int SoldQty, int PreOrderID)
+        {
+            bool Result = false;
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+            Params.Add(mdbh.AddParameter("BatchID", SqlDbType.NVarChar, BatchID));
+            Params.Add(mdbh.AddParameter("ProductId", SqlDbType.Int, ProductId));
+            Params.Add(mdbh.AddParameter("FarmerId ", SqlDbType.NVarChar, FarmerId));
+            Params.Add(mdbh.AddParameter("OtherFarmerNames", SqlDbType.NVarChar, OtherFarmerNames));
+            Params.Add(mdbh.AddParameter("OtherFarmerArea", SqlDbType.NVarChar, OtherFarmerArea));
+            Params.Add(mdbh.AddParameter("OtherFarmerQty", SqlDbType.NVarChar, OtherFarmerQty));
+            Params.Add(mdbh.AddParameter("CollectionQty ", SqlDbType.NVarChar, CollectedQty));
+            Params.Add(mdbh.AddParameter("PlantationID ", SqlDbType.NVarChar, PlantationID));
+            Params.Add(mdbh.AddParameter("FarmId", SqlDbType.NVarChar, FarmId));
+            Params.Add(mdbh.AddParameter("LotNumber", SqlDbType.NVarChar, LotNumber));
+            Params.Add(mdbh.AddParameter("CreatedBy", SqlDbType.NVarChar, CreatedBy));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("TypeOfOperation", SqlDbType.Int, TypeOfOperation));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, Result, Param_Directions.Param_Out));
+            Params.Add(mdbh.AddParameter("TotalQty", SqlDbType.Int, TotalQty));
+            Params.Add(mdbh.AddParameter("AvaliableQty", SqlDbType.Int, AvaliableQty));
+            Params.Add(mdbh.AddParameter("SoldQty", SqlDbType.Int, SoldQty));
+            Params.Add(mdbh.AddParameter("CollectionTransactionID", SqlDbType.Int, PreOrderID));
+            try
+            {
+                Result = (bool)mdbh.ExecuteNonQuery(sp.sp_tblPreOrderCollectionTransaction_INSandUPDandDEL, Params);
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Result;
+        }
+        public static DataTable PreOrderList()
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT poct.*,pd.Productname FROM [tblPreOrderCollectionTransaction] poct  Left Join tblProductDetails pd ON pd.ProductId = poct.ProductID");
+
+        }
+        public static bool PreorderSoldQtyUpdate(int PreOrderID, int SoldQty, string ModifiedBy)
+        {
+            bool Result = false;
+            MudarSPName sp = new MudarSPName();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            List<SqlParameter> Params = new List<SqlParameter>();
+
+            Params.Add(mdbh.AddParameter("SoldQty", SqlDbType.Int, SoldQty));
+            Params.Add(mdbh.AddParameter("CollectionTransactionID", SqlDbType.Int, PreOrderID));
+            Params.Add(mdbh.AddParameter("ModifiedBy", SqlDbType.NVarChar, ModifiedBy));
+            Params.Add(mdbh.AddParameter("ReturnValue", SqlDbType.Bit, Result, Param_Directions.Param_Out));
+            try
+            {
+                Result = (bool)mdbh.ExecuteNonQuery(sp.sp_tblPreOrderCollectionTransaction_Update, Params);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Result;
+        }
+        #endregion
+
+        #region Orders for Admin checkit
+        public static bool NewOrderArrived()
+        {
+            bool result = false;
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            DataTable dt = new DataTable();
+            dt = mdbh.ExecuteDataTable("SELECT * FROM tblOrderIndicator where Status='true'");
+            try
+            {
+                if (dt.Rows.Count > 0)
+                {
+                    string value = Convert.ToString(dt.Rows[0][1]);
+                    result = value == "true" ? true : false;
+                }
+                else
+                    result = false;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return result;
+        }
+        public static void UpdateTrackPO()
+        {
+            try
+            {
+                string sqlQuery = "update tblOrderIndicator set Status='false'";
+                MudarDBHelper mdbh = MudarDBHelper.Instance;
+                mdbh.ExecuteDataTable(sqlQuery);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        } 
+        #endregion
+
+        #region Orders for Branch Checkit
+        public static bool NewBranchOrderArrived()
+        {
+            bool result = false;
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            DataTable dt = new DataTable();
+            dt = mdbh.ExecuteDataTable("SELECT * FROM tblBranchOrderIndicator where Status='true'");
+            try
+            {
+                if (dt.Rows.Count > 0)
+                {
+                    string value = Convert.ToString(dt.Rows[0][1]);
+                    result = value == "true" ? true : false;
+                }
+                else
+                    result = false;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return result;
+        }
+        public static void updateBranchPendingOrders()
+        {
+            try
+            {
+                string sqlQuery = "update tblBranchOrderIndicator set Status='false'";
+                MudarDBHelper mdbh = MudarDBHelper.Instance;
+                mdbh.ExecuteDataTable(sqlQuery);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        } 
+        #endregion
+    }
+}

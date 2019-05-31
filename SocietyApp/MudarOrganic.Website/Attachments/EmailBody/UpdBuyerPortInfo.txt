@@ -1,0 +1,19 @@
+﻿<p>
+<br/>
+Hi <b>@Company@</b><br/>
+Your <b>Edit request</b> Updated Successfully <br/><html>
+	<body>
+	<table border="1" width="100%">
+	<tr><td colspan="2"width="40%" bgcolor="#e2efd9" align="center"><b>Port Information</b></td>
+	<tr bgcolor="#e2efd9"><td width="40%" align="center">Transport Mode</td><td width="60%" align="center">@TransportMode@</td></tr>
+	<tr bgcolor="#e2efd9"><td width="40%" align="center">Air port</td><td width="60%" align="center">@Air@</td></tr>
+	<tr bgcolor="#e2efd9"><td width="40%" align="center">Sea port</td><td width="60%" align="center">@Sea@</td></tr>
+	<tr bgcolor="#e2efd9"><td width="40%" align="center">Road port</td><td width="60%" align="center">@Road@</td></tr>
+	<tr bgcolor="#e2efd9"><td width="40%" align="center">Rail port</td><td width="60%" align="center">@Rail@</td></tr>
+	</table>
+	</body>
+</html>
+<br/>
+Thanks<br/> 
+<b>Mudar India Exports</b>
+</p>

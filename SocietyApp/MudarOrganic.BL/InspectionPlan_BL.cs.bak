@@ -1,0 +1,234 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using MudarOrganic.DL;
+using System.Data;
+using System.Configuration;
+
+namespace MudarOrganic.BL
+{
+    public class InspectionPlan_BL
+    {
+        //public bool InspectionPlan_INS(string FarmerId, string FarmerName, string FarmerCode, string FarmerArea, string InspectorID, string InspectorName, DateTime PlanDate, DateTime VisitedDate, int Year, string PlanName, int SeasonID, int InspectionHistoryID, string CreatedBy, int TypeOfOperation)
+        //{
+        //    return InspectionPlan_DL.InspectionPlan_INS(FarmerId, FarmerName, FarmerCode, FarmerArea, InspectorID, InspectorName, PlanDate, VisitedDate, Year, PlanName, SeasonID, InspectionHistoryID, CreatedBy, TypeOfOperation);
+        //} 
+        public int HolidaysCount(int year, DateTime start, DateTime end)
+        {
+            int count = 0;
+            DataTable temp = InspectionPlan_DL.Holidays(year, start, end);
+            if (temp.Rows.Count > 0)
+                count = temp.Rows.Count;
+            return count;
+        }
+        public DataTable Holidays(int year)
+        {
+            return InspectionPlan_DL.Holidays(year);
+        }
+        public DataTable Holidays(int year, DateTime start, DateTime end)
+        {
+            return InspectionPlan_DL.Holidays(year, start, end);
+        }
+        public bool HolidayExist(DateTime HolidayDate)
+        {
+            return InspectionPlan_DL.HolidayExist(HolidayDate);
+        }
+        public DataTable FarmerCount()
+        {
+            return InspectionPlan_DL.FarmerCount();
+        }
+        public DataTable EmployeesCount()
+        {
+            return InspectionPlan_DL.EmployeesCount();
+        }
+        public int GetEmployeeWithRoles(string role)
+        {
+            DataRow[] drEmployees = (BranchsRolesEmployees_DL.GetEmployeeWithRoles()).Select("Roleid ='" + role + "'");
+            return drEmployees.Length;
+        }
+        public DataTable Newplan(int year, decimal DaysPerFarmer, DateTime startDate, DateTime endDate, string role)
+        {
+            int count = 0;
+            DataTable dtNewPlan = new DataTable();
+            DataTable dtHolidays = Holidays(year, startDate, endDate);
+            DateTime planDate;
+            DateTime planDate1 = startDate;
+            DataTable dtdate = new DataTable();
+            dtdate.Columns.Add("Village");
+            dtdate.Columns.Add("PlanDate");
+            dtdate.Columns.Add("InspectorID");
+            dtdate.Columns.Add("InspectorName");
+            DataTable farmervillages = UnitInformation_DL.FarmersVillageList();
+            Random randomdate = new Random();
+            for (int v = 0; v < farmervillages.Rows.Count; v++)
+            {
+                for (int d = 0; d < 5; d++)
+                {
+                    DataRow newrow = dtdate.NewRow();
+                    newrow["Village"] = farmervillages.Rows[v]["City_Village"].ToString();
+                    if (planDate1 >= startDate && planDate1 <= endDate)
+                    {
+                        int range = ((TimeSpan)(Convert.ToDateTime(endDate) - Convert.ToDateTime(startDate))).Days;
+                        planDate = Convert.ToDateTime(startDate).AddDays(randomdate.Next(range));
+                        DataTable EmployeeTable = BranchsRolesEmployees_DL.GetEmployeBasedonRoleID(role);
+                        if (EmployeeTable.Rows.Count > 0)
+                        {
+                            int getunitID = new Random().Next(0, EmployeeTable.Rows.Count);
+                            if (count == 0)
+                            {
+                                newrow["InspectorID"] = EmployeeTable.Rows[getunitID]["EmployeeId"].ToString();
+                                newrow["InspectorName"] = EmployeeTable.Rows[getunitID]["EmployeeFristName"].ToString();
+                                count++;
+                            }
+                            else
+                            {
+                                newrow["InspectorID"] = EmployeeTable.Rows[count]["EmployeeId"].ToString();
+                                newrow["InspectorName"] = EmployeeTable.Rows[count]["EmployeeFristName"].ToString();
+                            }
+                        }
+                        if (planDate.DayOfWeek.ToString().ToLower() == "sunday")
+                        {
+                            planDate = planDate.AddDays(1);
+                        }
+                        if (planDate.DayOfWeek.ToString().ToLower() != "sunday")
+                        {
+                            for (int hcount = 0; hcount < dtHolidays.Rows.Count; hcount++)
+                            {
+                                if (DateTime.Compare(planDate, Convert.ToDateTime(dtHolidays.Rows[hcount]["HolidayDate"].ToString().Trim())) == 0)
+                                {
+                                    planDate = planDate.AddDays(1);
+                                    hcount = -1;
+                                }
+                            }
+                            if (planDate.DayOfWeek.ToString().ToLower() == "sunday")
+                            {
+                                planDate = planDate.AddDays(1);
+                            }
+                            newrow["PlanDate"] = planDate.ToShortDateString();
+                        }
+                    }
+                    dtdate.Rows.Add(newrow);
+                }
+            }
+            return dtdate;
+        }
+        public DataTable NewPlanDetails(int year, decimal DaysPerFarmer, DateTime startDate, DateTime endDate, string role)
+        {
+            DataTable FarmerTable = Farmer_DL.FamerDetails();
+            DataRow[] drEmployees = (BranchsRolesEmployees_DL.GetEmployeeWithRoles()).Select("Roleid ='" + role + "'");
+            DataTable dtNewPlan = new DataTable();
+            DataTable dtHolidays = Holidays(year, startDate, endDate);
+            dtNewPlan.Columns.Add("FarmerID");
+            dtNewPlan.Columns.Add("FarmerName");
+            dtNewPlan.Columns.Add("FarmerCode");
+            dtNewPlan.Columns.Add("FarmerArea");
+            dtNewPlan.Columns.Add("InspectorID");
+            dtNewPlan.Columns.Add("InspectorName");
+            dtNewPlan.Columns.Add("PlanDate");
+            dtNewPlan.Columns.Add("VisitedDate");
+            dtNewPlan.Columns.Add("InspectionID");
+
+            int employeecount = 0;
+            DateTime planDate = startDate;
+            foreach (DataRow drFarmer in FarmerTable.Rows)
+            {
+                DataRow newrow = dtNewPlan.NewRow();
+
+                newrow["InspectionID"] = "0";
+                newrow["FarmerID"] = drFarmer["FarmerID"];
+                newrow["FarmerName"] = drFarmer["FirstName"];
+                newrow["FarmerCode"] = drFarmer["FarmerCode"];
+                newrow["FarmerArea"] = drFarmer["City_Village"];
+                if (employeecount < drEmployees.Length)
+                {
+                    DataRow dremp = drEmployees[employeecount];
+                    newrow["InspectorID"] = dremp["EmployeeID"];
+                    newrow["InspectorName"] = dremp["EmployeeFristName"];
+                    employeecount += 1;
+                    if (employeecount == drEmployees.Length)
+                        employeecount = 0;
+                }
+                if (planDate >= startDate && planDate <= endDate)
+                {
+                    if (planDate.DayOfWeek.ToString().ToLower() == "sunday")
+                    {
+                        planDate = planDate.AddDays(1);
+                    }
+                    if (planDate.DayOfWeek.ToString().ToLower() != "sunday")
+                    {
+                        for (int hcount = 0; hcount < dtHolidays.Rows.Count; hcount++)
+                        {
+                            if (DateTime.Compare(planDate, Convert.ToDateTime(dtHolidays.Rows[hcount]["HolidayDate"].ToString().Trim())) == 0)
+                            {
+                                planDate = planDate.AddDays(1);
+                                hcount = -1;
+                            }
+                        }
+                        if (planDate.DayOfWeek.ToString().ToLower() == "sunday")
+                        {
+                            planDate = planDate.AddDays(1);
+                        }
+                        newrow["PlanDate"] = planDate.ToShortDateString();
+                        newrow["VisitedDate"] = planDate.ToShortDateString();
+                        //newrow["PlanDate"] = string.Format("{0:dd MMM yyyy}",planDate.ToShortDateString());
+                        //newrow["VisitedDate"] = string.Format("{0:dd MMM yyyy}",planDate.ToShortDateString());
+                        planDate = planDate.AddDays(1);
+                        if (planDate > endDate)
+                        {
+                            planDate = startDate;
+                        }
+                    }
+
+                }
+                dtNewPlan.Rows.Add(newrow);
+            }
+            return dtNewPlan;
+        }
+        public bool InspectionHistory_INSandUPDandDEL(int InspectioHistoryID, int Year, string PlanName, int SeasonID, string CreatedBY, string ModifiedBy, ref  int NewHistoryId)
+        {
+            return InspectionPlan_DL.InspectionHistory_INSandUPDandDEL(InspectioHistoryID, Year, PlanName, SeasonID, CreatedBY, ModifiedBy, ref NewHistoryId);
+        }
+        public bool InspectionPlan_INS(int InspectionID, int InspectionHistoryID, string EmployeeID, string FarmerID, DateTime PlanDate, DateTime VisitDate, string CreatedBy, string ModifiedBy)
+        {
+            return InspectionPlan_DL.InspectionPlan_INS(InspectionID, InspectionHistoryID, EmployeeID, FarmerID, PlanDate, VisitDate, CreatedBy, ModifiedBy);
+        }
+        public DataTable GetInspectionPlan(int HistoryID)
+        {
+            return InspectionPlan_DL.GetInspectionPlan(HistoryID);
+        }
+        public DataTable GetInspectionPlan(string EmployeeID)
+        {
+            return InspectionPlan_DL.GetInspectionPlan(EmployeeID);
+        }
+        public DataTable GetInspectionPlan(string EmployeeID, string From, string To)
+        {
+            return InspectionPlan_DL.GetInspectionPlan(EmployeeID, From, To);
+        }
+        public DataTable GetInspectionPlanHistory(int Year, int SeasonID)
+        {
+            return InspectionPlan_DL.GetInspectionPlanHistory(Year, SeasonID);
+        }
+        public DataTable GetInspectionBasedonFarmerName(string Farmername)
+        {
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT far.FarmerId,far.FirstName as 'FarmerName',far.FarmerCode,far.City_Village AS 'FarmerArea',emp.EmployeeId AS 'InspectorID',emp.EmployeeFristName AS 'InspectorName', ins.PlanDate,ins.VisitDate AS 'VisitedDate',ins.InspectionID,SUM( ffd.PlotArea ) AS 'Total_Area'  FROM dbo.tblInspection ins INNER JOIN dbo.tblEmployeeDetails emp ON ins.EmployeeID = emp.EmployeeId INNER JOIN dbo.tblFarmerDetails far ON ins.FarmerID = far.FarmerId LEFT JOIN dbo.tblFarmerFarmDetails ffd ON ins.FarmerID = ffd.FarmerID WHERE far.FirstName='" + Farmername + "'GROUP BY far.FarmerId,far.FirstName ,far.FarmerCode,far.City_Village ,emp.EmployeeId ,emp.EmployeeFristName, ins.PlanDate,ins.VisitDate ,ins.InspectionID ");
+        }
+        public bool HolidayList_INSandUPDandDEL(int HolidayID, int year, DateTime date, string CreatedBy, string ModifiedBy, int TypeOfOperation)
+        {
+            return InspectionPlan_DL.HolidayList_INSandUPDandDEL(HolidayID, year, date, CreatedBy, ModifiedBy, TypeOfOperation);
+        }
+        public DataTable GetHolidaysList()
+        {
+            return InspectionPlan_DL.GetHolidaysList();
+        }
+        public DataTable GetHolidaysListByYear(int year)
+        {
+            return InspectionPlan_DL.GetHolidaysListByYear(year);
+        }
+        public DataTable GetHolidaysListBasedonHolidayID(int HolidayID)
+        {
+            return InspectionPlan_DL.GetHolidaysListBasedonHolidayID(HolidayID);
+        }
+    }
+}
