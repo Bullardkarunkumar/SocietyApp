@@ -28,7 +28,8 @@ using MudarOrganic.Components;
 using System.Net;
 using HtmlAgilityPack;
 using System.Collections.Generic;
-using CrystalDecisions.CrystalReports.Engine;
+//using CrystalDecisions.CrystalReports.Engine;
+using CrystalDecisions.Reporting;
 
 public partial class Test : System.Web.UI.Page
 {
@@ -340,7 +341,7 @@ public partial class Test : System.Web.UI.Page
     }
     private void SetConnectionInfo(ReportDocument ReportDoc)
     {
-
+        
         CrystalDecisions.Shared.TableLogOnInfo crLogOnInfo;
         crLogOnInfo = ReportDoc.Database.Tables[0].LogOnInfo;
         crLogOnInfo.ConnectionInfo.ServerName = "BHANU-PC";
