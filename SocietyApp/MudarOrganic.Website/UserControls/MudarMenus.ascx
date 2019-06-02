@@ -281,7 +281,7 @@
                         CssClass="nav-link" Text="Membership"></asp:HyperLink>
                 </li>
                 <li aria-haspopup="true">
-                    <asp:HyperLink ID="HyperLink33" runat="server" NavigateUrl="~/Buyer/BuyerInfo.aspx"
+                    <asp:HyperLink ID="HyperLink33" runat="server" NavigateUrl="~/Masters/Sharecertificate.aspx"
                         CssClass="nav-link" Text="Accounts"></asp:HyperLink>
                 </li>
             </ul>

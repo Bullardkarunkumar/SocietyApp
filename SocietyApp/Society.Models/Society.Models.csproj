@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MastersSharecertificateViewModel.cs" />
     <Compile Include="MemberDetailsViewModels.cs" />
     <Compile Include="MembershipViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

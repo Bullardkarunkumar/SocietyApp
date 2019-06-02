@@ -57,5 +57,23 @@ namespace MudarOrganic.DL
             table = mdbh.ExecuteDataTable("SELECT max(admissionno) FROM CUS_PersonalDetails;");
             return table.Rows[0][0].ToString().Length > 0 ? Convert.ToInt32(table.Rows[0][0]) : 233;
         }
+        public static DataTable GetSharecertificateDetails(int Admissionno)
+        {
+            DataTable table = new DataTable();
+            MastersSharecertificateViewModel master = new MastersSharecertificateViewModel();
+            MudarDBHelper mdbh = MudarDBHelper.Instance;
+            return mdbh.ExecuteDataTable("SELECT admissionno,noofshares,shareprice,totalshareamt,MemberName,FatherName FROM CUS_PersonalDetails WHERE admissionno='" + Admissionno + "'");
+           
+            //if (masters.Rows[0][0].ToString().Length > 0)
+            //{
+            //    master.AdmissionNo = masters.Rows[0][0].ToString();
+            //    master.NoOfShares= masters.Rows[0][1].ToString();
+            //    master.SharePrice= masters.Rows[0][2].ToString();
+            //    master.TotalShareamt = masters.Rows[0][3].ToString();
+            //    master.MemberName = masters.Rows[0][4].ToString();
+            //    master.FatherName = masters.Rows[0][5].ToString();
+            //}
+            // return master;
+        }
     }
 }

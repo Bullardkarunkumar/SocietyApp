@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using MudarOrganic.DL;
@@ -16,6 +17,10 @@ namespace MudarOrganic.BL
         public int GetAdmissionNumber()
         {
             return Membership_DL.GetAdmissionNumber();
+        }
+        public DataTable GetSharecertificateDetails(int Admissionno)
+        {
+            return Membership_DL.GetSharecertificateDetails(Admissionno);
         }
     }
 }
